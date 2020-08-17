@@ -2,6 +2,7 @@ library(sf)
 library(LAGOSNE)
 library(dplyr)
 library(ggplot2)
+library(cowplot)
 
 dt <- read_sf("data/ReaLSAT-R-2.0.shp")
 
@@ -29,6 +30,11 @@ ggplot(data = dt_lagosne_areas, aes(area)) +
   geom_vline(aes(xintercept = 4))
 
 # ---- area_variations ----
+
+median_max_ratio <- function(x){
+  median(x, na.rm = TRUE) / max(x, na.rm = TRUE)
+}
+
 get_ts_file_path <- function(id){
   # id <- 572655
   f_list <- dir("data/realsat_r_2_monthly_timeseries/",
@@ -59,8 +65,8 @@ get_area_timeseries <- function(id){
                                      header = FALSE)),
                           stringsAsFactors = FALSE)
 
-
   res       <- setNames(res, c("fill", "update", "area"))
+  res$id    <- id
   res$month <- rep(
     sapply(1:12, function(x){
         if (nchar(x) < 2) {
@@ -84,27 +90,52 @@ get_area_timeseries <- function(id){
   res
 }
 
-median_max_ratio <- function(x){
-  median(x, na.rm = TRUE) / max(x, na.rm = TRUE)
+if(!file.exists("data/area_timeseries.rds")){
+  test <- lapply(seq_len(nrow(dt_lagosne)),
+                 function(i){
+                   print(i)
+                   get_area_timeseries(dt_lagosne$ID[i])
+                 })
+  saveRDS(test, "data/area_timeseries.rds")
 }
 
-test <- lapply(seq_len(nrow(dt_lagosne)),
-               function(i){
-                 print(i)
-                 get_area_timeseries(dt_lagosne$ID[i])
-               })
+ts_plot <- function(id, dt){
+  dt <- dt[dt$id == id,]
+  ggplot(data = dt) +
+    geom_line(aes(x = date, y = area), col = "red") +
+    geom_line(aes(x = date, y = area_rm_missing))
+}
+
+
+test  <- readRDS("data/area_timeseries.rds")
 test2 <- test[which(unlist(lapply(test, function(x) !is.null(nrow(x)))))]
+test2 <- dplyr::bind_rows(test2)
 
-test3 <- unlist(lapply(test2, function(x)  median_max_ratio(x$area_rm_missing)))
+i <- 1
+cowplot::plot_grid(
+  ts_plot(unique(test2$id)[i], test2),
+  ggplot() + geom_sf(data = dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
+)
 
-hist(test3)
+i <- 2
+cowplot::plot_grid(
+  ts_plot(unique(test2$id)[i], test2),
+  ggplot() + geom_sf(data = dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
+)
 
-test <- get_area_timeseries(id)
-plot(test$date, test$area, type = "l", col = "red")
-lines(test$date, test$area_rm_missing)
+mapview::mapview(dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
 
+# ---- map_medianmax_ratio ----
+dt_lagosne_centroid <- st_centroid(dt_lagosne)
 
+test3 <- test2 %>%
+  group_by(id) %>%
+  summarise(ratio = median_max_ratio(.data$area_rm_missing))
 
+hist(test3$ratio)
+# high numbers indicate drought troughs
+# low numbers indicate flood peaks
 
-
-mapview::mapview(dt[which(dt$ID == as.numeric(id)),])
+testaa <- dplyr::left_join(dt_lagosne_centroid, test3,
+                           by = c("ID" = "id"))
+plot(testaa["ratio"])
