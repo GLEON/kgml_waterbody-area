@@ -8,7 +8,13 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>", 
-  fig.path = "figures/"
+  fig.path = "figures/",
+  fig.width = 5.5, 
+  fig.height = 3,
+  echo = FALSE, 
+  fig.align = "center", 
+  message = FALSE, 
+  warning = FALSE
 )
 ```
 
@@ -18,43 +24,76 @@ knitr::opts_chunk$set(
 
 ReaLSAT-R-2.0 provides surface area variations of 15473 reservoirs created after 1984 (detected using satellite imagery analysis, see [paper](http://umnlcc.cs.umn.edu/realsat/reservoirs/data/ReaLSAT-R-2.0.pdf)). In addition, it also provides area variations of 3274 reservoirs created before 1984 (taken from a widely used GRanD database.)
 
- * 853 reservoirs in ReaLSAT-R-2.0 that are also reported in GRanD dataset.
-
- * 14620 reservoirs in ReaLSAT-R-2.0 that are not available in GRanD.
-
- * 3274 reservoirs created before 1984 (taken from GRanD) 
-
 ## Exploration
 
-```{r }
-library(sf)
-library(LAGOSNE)
-suppressMessages(library(dplyr))
-library(ggplot2)
+```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
+suppressWarnings(source("scripts/explore.R"))
+```
 
-dt <- read_sf("data/ReaLSAT-R-2.0.shp")
-
-dt_lagosne <- dt %>%
-  st_intersects(st_zm(LAGOSNE::lg_extent)) %>%
-  lapply(., function(x) length(x)) %>%
-  unlist() %>%
-  sapply(function(x) x!=0)
-dt_lagosne <- dt[dt_lagosne,]
-
+```{r map}
 ggplot() +
-  geom_sf(data = st_zm(LAGOSNE::lg_extent)) +
-  geom_sf(data = dt_lagosne)
+  geom_sf(data = lg_ne_states) +
+  geom_sf(data = dt_lagosne) +
+  theme_map() +
+  ggtitle("Map of ReaLSAT lakes\n within LAGOSNE footprint")
+```
 
-dt_lagosne_areas <- dt_lagosne %>%
-  st_area() %>%
-  units::set_units("ha") %>%
-  as.numeric() %>%
-  data.frame(area = .)
+----
 
+```{r map_medianmax_ratio}
+ggplot() +
+  geom_sf(data = lg_ne_states) +
+  geom_sf(data = testaa, aes(color = ratio), size = 0.6) +
+  scale_color_gradient2(midpoint = 0.5) +
+  #scale_color_brewer(palette = "BrBG", type = "div") +
+  theme_map() +
+  ggtitle("Ratio of median area to max area",
+          subtitle = "High = drought troughs \nLow  = flood peaks")
+```
+
+----
+
+```{r area_variations, fig.width=6.5, fig.height=4}
+testaa <- dplyr::arrange(testaa, ratio) %>%
+  dplyr::filter(ID %in% unique(test2$id))
+
+hilow_pnts <- dt_lagosne[
+                dt_lagosne$ID %in% c(testaa$ID[2], #low id
+                                     testaa$ID[nrow(testaa) - 1]),] #high id
+
+gg_highlow_map <- ggplot() + 
+  geom_sf(data = lg_ne_states) +
+  geom_sf(data = 
+            st_centroid(hilow_pnts), color = c("blue", "red")) +
+  # geom_sf_label(data = hilow_pnts, aes(label = ID), 
+  #               nudge_y = 1, nudge_x = 1) +
+  theme_map()
+
+i_low  <- which(unique(test2$id) == testaa$ID[2])
+i_high <- which(unique(test2$id) == testaa$ID[nrow(testaa) - 1])
+gg_ts <- cowplot::plot_grid(
+  ts_plot(unique(test2$id)[i_low], test2) +
+    # ggtitle(unique(test2$id)[i_low]) +
+    theme_cowplot(),
+  ts_plot(unique(test2$id)[i_high], test2) + 
+    # ggtitle(unique(test2$id)[i_high]) +
+    theme_cowplot() +
+    theme(axis.text.y = element_blank(), 
+          axis.title.y = element_blank()), 
+  rel_widths = c(1.1, 1)
+)
+
+cowplot::plot_grid(gg_highlow_map, 
+                   gg_ts, ncol = 1, rel_heights = c(1.9, 1))
+
+```
+
+```{r areas, fig.width=4, fig.height=3, eval=FALSE}
 ggplot(data = dt_lagosne_areas, aes(area)) +
   geom_histogram() +
   scale_x_log10() +
-  geom_vline(aes(xintercept = 4))
+  geom_vline(aes(xintercept = 4)) +
+  theme_cowplot()
 ```
 
 ## Links

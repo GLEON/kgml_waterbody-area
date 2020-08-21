@@ -4,18 +4,38 @@ library(dplyr)
 library(ggplot2)
 library(cowplot)
 
+# from jsta::usa_sf
+usa_sf <- function(crs){
+  res <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE))
+  state_key <- data.frame(state = datasets::state.abb,
+                          ID = tolower(datasets::state.name),
+                          stringsAsFactors = FALSE)
+  res <- dplyr::left_join(res, state_key, by = "ID")
+  dplyr::filter(res, !is.na(.data$state))
+}
+
 dt <- read_sf("data/ReaLSAT-R-2.0.shp")
 
 dt_lagosne <- dt %>%
-  st_intersects(st_zm(LAGOSNE::lg_extent)) %>%
+  st_within(st_zm(LAGOSNE::lg_extent)) %>%
   lapply(., function(x) length(x)) %>%
   unlist() %>%
   sapply(function(x) x!=0)
 dt_lagosne <- dt[dt_lagosne,]
 
-ggplot() +
-  geom_sf(data = st_zm(LAGOSNE::lg_extent)) +
-  geom_sf(data = dt_lagosne)
+lg_ne_states <- usa_sf()[
+  unlist(lapply(
+    st_contains(usa_sf(), dt_lagosne),
+    function(x) length(x) > 7)),] %>%
+  dplyr::filter(!(state %in% c("AR", "KS", "NE")))
+
+dt_lagosne_states <- dt_lagosne %>%
+  st_within(lg_ne_states) %>%
+  lapply(., function(x) length(x)) %>%
+  unlist() %>%
+  sapply(function(x) x!=0)
+dt_lagosne <- dt_lagosne[dt_lagosne_states,]
+
 
 # ---- areas ----
 dt_lagosne_areas <- dt_lagosne %>%
@@ -24,14 +44,23 @@ dt_lagosne_areas <- dt_lagosne %>%
   as.numeric() %>%
   data.frame(area = .)
 
-ggplot(data = dt_lagosne_areas, aes(area)) +
-  geom_histogram() +
-  scale_x_log10() +
-  geom_vline(aes(xintercept = 4))
-
 # ---- area_variations ----
+# r_seq <- rnorm(40, 2)
+# median_max_ratio(r_seq)
+# x <- c(rep(0, 20), r_seq)
+# x <- c(rep(NA, 20), r_seq)
+# median_max_ratio(x)
+
+# median_max_ratio(
+#   dplyr::filter(test2, id == 471533)$area_rm_missing)
 
 median_max_ratio <- function(x){
+  if(is.na(x[1])){# trim leading NAs
+    x <- x[(min(which(!is.na(rle(x)$values)))):length(x)]
+  }
+  if (x[1] == 0) {# trim leading zeros
+    x <- x[(rle(x)$lengths[1] + 1):length(x)]
+  }
   median(x, na.rm = TRUE) / max(x, na.rm = TRUE)
 }
 
@@ -111,19 +140,7 @@ test  <- readRDS("data/area_timeseries.rds")
 test2 <- test[which(unlist(lapply(test, function(x) !is.null(nrow(x)))))]
 test2 <- dplyr::bind_rows(test2)
 
-i <- 1
-cowplot::plot_grid(
-  ts_plot(unique(test2$id)[i], test2),
-  ggplot() + geom_sf(data = dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
-)
-
-i <- 2
-cowplot::plot_grid(
-  ts_plot(unique(test2$id)[i], test2),
-  ggplot() + geom_sf(data = dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
-)
-
-mapview::mapview(dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
+# mapview::mapview(dt[which(dt$ID == as.numeric(unique(test2$id)[i])),])
 
 # ---- map_medianmax_ratio ----
 dt_lagosne_centroid <- st_centroid(dt_lagosne)
@@ -132,10 +149,9 @@ test3 <- test2 %>%
   group_by(id) %>%
   summarise(ratio = median_max_ratio(.data$area_rm_missing))
 
-hist(test3$ratio)
+# hist(test3$ratio)
 # high numbers indicate drought troughs
 # low numbers indicate flood peaks
 
 testaa <- dplyr::left_join(dt_lagosne_centroid, test3,
                            by = c("ID" = "id"))
-plot(testaa["ratio"])
