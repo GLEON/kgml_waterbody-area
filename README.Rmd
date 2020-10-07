@@ -18,86 +18,41 @@ knitr::opts_chunk$set(
 )
 ```
 
-# realsat-r
+# realsat
 
-## Dataset Summary
+## Vector layer fields
 
-ReaLSAT-R-2.0 provides surface area variations of 15473 reservoirs created after 1984 (detected using satellite imagery analysis, see [paper](http://umnlcc.cs.umn.edu/realsat/reservoirs/data/ReaLSAT-R-2.0.pdf)). In addition, it also provides area variations of 3274 reservoirs created before 1984 (taken from a widely used GRanD database.)
+ID: the unique ID for water body. ID values are used as names of shapefiles that contain monthly shapes.
 
-## Exploration
+RESERVOIR: categorizes water bodies into two sets - 1 represents reservoirs manually verified by visual validation, and 0 represents other water bodies. Note that the reservoir list is not exhaustive and water bodies with 0 value could be reservoirs. The reservoir subset was created using a machine learning methodology. Please refer to http://umnlcc.cs.umn.edu/realsat/reservoirs/data/ReaLSAT-R-2.0.pdf for more details.
 
-```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
-suppressWarnings(source("scripts/explore.R"))
-```
+TAG: categorizes the water bodies into two sets - 1 represents water bodies for which changes made by the ORBIT algorithm (correcting erroneous labels in GSW dataset and filling missing labels) are more reliable. Please refer to the paper (https://www.cs.umn.edu/sites/cs.umn.edu/files/tech_reports/20-002.pdf) for more details.
 
-```{r map}
-ggplot() +
-  geom_sf(data = lg_ne_states) +
-  geom_sf(data = dt_lagosne) +
-  theme_map() +
-  ggtitle("Map of ReaLSAT lakes\n within LAGOSNE footprint")
-```
+AREA: number of LANDSAT 30-m pixels covered by the water body. This area was calculated by counting pixels in a water body that exists as water atleast 10 % of the time.
 
-----
+Hylak_id: The water body ID based on the HydroLAKES dataset. Water bodies that are not present in HdyroLAKEs but are available in ReaLSAT have ID as 0.
 
-```{r map_medianmax_ratio}
-ggplot() +
-  geom_sf(data = lg_ne_states) +
-  geom_sf(data = testaa, aes(color = ratio), size = 0.6) +
-  scale_color_gradient2(midpoint = 0.5) +
-  #scale_color_brewer(palette = "BrBG", type = "div") +
-  theme_map() +
-  ggtitle("Ratio of median area to max area",
-          subtitle = "High = drought troughs \nLow  = flood peaks")
-```
+Hylak_frc: % overlap between ReaLSAT and HydroLAKES database.
 
-----
+CONTINENT: between 0 and 8 representing different continents -
 
-```{r area_variations, fig.width=6.5, fig.height=4}
-testaa <- dplyr::arrange(testaa, ratio) %>%
-  dplyr::filter(ID %in% unique(test2$id))
+0:Other 1:Asia 2:North America 3:Europe 4:Africa 5:South America 6:Oceania 7:Australia 8:Antarctica
 
-hilow_pnts <- dt_lagosne[
-                dt_lagosne$ID %in% c(testaa$ID[2], #low id
-                                     testaa$ID[nrow(testaa) - 1]),] #high id
+geometry: reference shape of the reservoir
 
-gg_highlow_map <- ggplot() + 
-  geom_sf(data = lg_ne_states) +
-  geom_sf(data = 
-            st_centroid(hilow_pnts), color = c("blue", "red")) +
-  # geom_sf_label(data = hilow_pnts, aes(label = ID), 
-  #               nudge_y = 1, nudge_x = 1) +
-  theme_map()
 
-i_low  <- which(unique(test2$id) == testaa$ID[2])
-i_high <- which(unique(test2$id) == testaa$ID[nrow(testaa) - 1])
-gg_ts <- cowplot::plot_grid(
-  ts_plot(unique(test2$id)[i_low], test2) +
-    # ggtitle(unique(test2$id)[i_low]) +
-    theme_cowplot(),
-  ts_plot(unique(test2$id)[i_high], test2) + 
-    # ggtitle(unique(test2$id)[i_high]) +
-    theme_cowplot() +
-    theme(axis.text.y = element_blank(), 
-          axis.title.y = element_blank()), 
-  rel_widths = c(1.1, 1)
-)
+## Monthly timeseries fields
 
-cowplot::plot_grid(gg_highlow_map, 
-                   gg_ts, ncol = 1, rel_heights = c(1.9, 1))
+Column 1: fill percentage time series
 
-```
+Column 2: update percentage time series
 
-```{r areas, fig.width=4, fig.height=3, eval=FALSE}
-ggplot(data = dt_lagosne_areas, aes(area)) +
-  geom_histogram() +
-  scale_x_log10() +
-  geom_vline(aes(xintercept = 4)) +
-  theme_cowplot()
-```
+Column 3: area time series
+
+---
 
 ## Links
 
-http://umnlcc.cs.umn.edu/realsat/reservoirs/
+http://umnlcc.cs.umn.edu/realsat/
 
-http://umnlcc.cs.umn.edu/realsat/reservoirs/data/ReaLSAT-R-2.0.html
+http://umnlcc.cs.umn.edu/realsat/data/ReaLSAT.html
