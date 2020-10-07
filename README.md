@@ -3,7 +3,7 @@
 
 # realsat
 
-## Vector fields
+## Vector layer fields
 
 ID: the unique ID for water body. ID values are used as names of
 shapefiles that contain monthly shapes.
@@ -39,6 +39,14 @@ CONTINENT: between 0 and 8 representing different continents -
 6:Oceania 7:Australia 8:Antarctica
 
 geometry: reference shape of the reservoir
+
+## Monthly timeseries fields
+
+Column 1: fill percentage time series
+
+Column 2: update percentage time series
+
+Column 3: area time series
 
 -----
 
