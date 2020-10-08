@@ -43,11 +43,11 @@ geometry: reference shape of the reservoir
 
 ## Monthly timeseries fields
 
-Column 1: fill percentage time series
+Column 1: fill; Percentage of pixels (ranges between 0 and 100) filled (by algorithms used to create ReaLSAT) that had missing label in the original labels in the GSW dataset.
 
-Column 2: update percentage time series
+Column 2: update; Percentage of pixels (ranges between 0 and 100) changed (by algorithms used to create ReaLSAT.) This number represents the percentage of pixels filled + percentage of pixels where labels were corrected by the algorithms.
 
-Column 3: area time series
+Column 3: area; in units of sq km
 
 ---
 
