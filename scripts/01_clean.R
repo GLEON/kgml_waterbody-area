@@ -24,7 +24,10 @@ dt_us_areas <- dt_us %>%
   dplyr::filter(area >= 80)
 
 dt_us     <- dt_us[dt_us$ID %in% dt_us_areas$id,]
-# dt_us_pnt <- st_centroid(dt_us)
+dt_us_pnt <- st_centroid(dt_us)
+sf::write_sf(dt_us_pnt, "data/dt_us_pnt.gpkg")
+# mapview::mapview(dt_us_pnt)
+
 
 if(!file.exists("data/area_timeseries.rds")){
   start_time <- Sys.time()
@@ -64,5 +67,6 @@ ts_plot <- function(dt, id){
     theme_cowplot()
 }
 
+res_combined <- readRDS("data/area_timeseries.rds")
 # mapview::mapview(dt_us[dt_us$ID == 719196,])
 # ts_plot(res_combined, 719196)
