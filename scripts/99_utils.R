@@ -46,7 +46,8 @@ get_ts_file_path <- function(id, file_table){
 #'
 #' @example
 #' id <- 458167
-#' get_area_timeseries(id)
+#' file_table <- get_ts_file_table()
+#' get_area_timeseries(id, f_table)
 get_area_timeseries <- function(id, file_table){
   f_path <- get_ts_file_path(id, file_table)
   if(is.na(f_path)){
