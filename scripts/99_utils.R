@@ -29,7 +29,7 @@ get_ts_file_table <- function(){
 #'
 #' @example
 #' id <- 458167
-#' get_ts_file_path(id)
+#' get_ts_file_path(id, get_ts_file_table())
 #'
 get_ts_file_path <- function(id, file_table){
   folder_id <- file_table[which(file_table$id == id),]$name - 1
