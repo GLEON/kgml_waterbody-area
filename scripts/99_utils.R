@@ -81,3 +81,8 @@ get_area_timeseries <- function(id, file_table){
 
   res
 }
+
+landsat_pixels_to_area <- function(x){
+  units::set_units(
+    units::as_units(x * 30 * 30, "m2"), "ha")
+}
