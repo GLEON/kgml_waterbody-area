@@ -31,7 +31,7 @@ dt_us_pnt$ppt_prism <- raster::extract(dt_prism, as_Spatial(dt_us_pnt))
 plot(dt_us_pnt[,"ppt_prism"])
 
 mapview(dt_us_pnt[1,]) +
-  mapview(raster::mask(dt_prism_raw, as_Spatial(dt_us_pnt[1,])))
+  mapview(raster::mask(dt_prism, as_Spatial(dt_us_pnt[1,])))
 
 # ---- link to a lake point layer ----
 wi_raw    <- wikilake::lake_wiki(c("Lake Mendota", "Trout Lake (Wisconsin)"))
