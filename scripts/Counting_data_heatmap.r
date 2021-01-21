@@ -18,20 +18,22 @@ area_timeseries <- readRDS("data/area_timeseries.rds")
 dt_us_pnt <- sf::st_read("data/dt_us_pnt.gpkg")
 dt_us <- sf::st_read("data/dt_us.gpkg")
 
-#  setting all -1 to NA
+#  setting all NA to -1
 area_timeseries[is.na(area_timeseries)] <- -1
 
 #  Counting number of months available per year per lake/reservoir ----
 area_timeseries$count <- ave(area_timeseries$area == "-1", area_timeseries$id,area_timeseries$year, FUN=cumsum)
 area_count <- area_timeseries %>% group_by(id,year) %>% top_n(1, count)
-area_count <- area_count[1:2243,c("id","year","count")] # selecting some lakes
-area_count$id <- as.character(area_count$id)
+area_count <- area_count[,c("id","year","count")]
 
 #  ploting a heatmap of data availability
+area_count_heatmap <- area_count[1:2243,] # selecting some lakes
+area_count_heatmap$id <- as.character(area_count_heatmap$id)
+
 textcol <- "grey40"
 
 png("Data_availability.png", units="in", width=11, height=6, res=300)
-ggplot(area_count,aes(x=year,y=id,fill=count))+
+ggplot(area_count_heatmap,aes(x=year,y=id,fill=count))+
   geom_tile(colour="white",size=0.2,height=0.6)+
   guides(fill=guide_legend(title="# Months missing data"))+
   labs(x="",y="",title="")+
@@ -53,3 +55,23 @@ ggplot(area_count,aes(x=year,y=id,fill=count))+
         plot.title=element_text(colour=textcol,hjust=0,size=14,face="bold"))+
   labs(y="ID",x=element_blank(), colour = "")+theme_bw()
 dev.off()
+
+# Plotting a histogram of 'number of months with data gaps' by 'number of lakes', faceted by year (excluding 0 counts and 2015)
+area_count_histo <- area_count %>% 
+  filter(count > 0) %>% 
+  filter(year != '2015')
+
+ggplot(data = area_count_histo, aes(count)) +
+  geom_histogram(position = "dodge", binwidth = 1) +
+  facet_wrap(~year) +
+  scale_x_continuous(breaks = c(1,3,5,7,9,11)) +
+  labs(x="No. of missing months",y="No. of lakes",title="") +
+  geom_vline(xintercept = 5, color = "red")
+
+#Plotting a histogram showing number of lakes with no gaps by year
+area_count_zero <- area_count %>% 
+  filter(count == 0)
+
+ggplot(data = area_count_zero, aes(year)) +
+  geom_histogram(position = "dodge", binwidth = 1) +
+  labs(x="",y="No. of lakes",title="")
