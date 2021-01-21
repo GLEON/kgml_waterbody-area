@@ -74,4 +74,4 @@ area_count_zero <- area_count %>%
 
 ggplot(data = area_count_zero, aes(year)) +
   geom_histogram(position = "dodge", binwidth = 1) +
-  labs(x="",y="No. of lakes",title="")
+  labs(x="",y="No. of lakes with no data gaps",title="")
