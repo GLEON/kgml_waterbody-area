@@ -22,6 +22,9 @@ InData <- area_timeseries %>% select(date, id, area_rm_missing) %>%
 InData <- InData[InData$id=="718893",] #647128, 572881, 470900, 718893
 #plot(InData$area_rm_missing~InData$date,type="l")    
 
+#normalize data
+InData$area_normalized <- (InData$area_rm_missing - mean(InData$area_rm_missing)) / sd(InData$area_rm_missing)
+
 nInData = dim(InData)[1]
 
 PlotHeatWave = TRUE # whether or not to plot the heat map of the wavelet transform
@@ -37,7 +40,7 @@ PlotHeatWave = TRUE # whether or not to plot the heat map of the wavelet transfo
 options("max.contour.segments" = 250000) # can make number larger if needed 
 
 #Wavelet analysis is this line!
-  output<-morlet(myData$area_rm_missing, myData$SeqTime, dj=1/12, siglvl = 0.95) ###p2 is 2^ whatever value that's set. # NULL sets p2 to 15. #Chose 14.5 so that plot has minimal area above COI
+  output<-morlet(myData$area_normalized, myData$SeqTime, dj=1/12, siglvl = 0.95) ###p2 is 2^ whatever value that's set. # NULL sets p2 to 15. #Chose 14.5 so that plot has minimal area above COI
     #NOTE: had to revert to default p2 because would not plot (I think numbers/dataframe too large??)
   
 # Post processing wavelet transform
