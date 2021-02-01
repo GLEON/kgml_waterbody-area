@@ -12,15 +12,25 @@ nYears = 30 # duration
 
 #read in realsat data
 area_timeseries = readRDS("./data/area_timeseries.rds")
+USlakes <- read_sf("data/ReaLSAT-R-2.0.shp")
+
+#add reservoir col to timeseries
+area_timeseries$Reservoir <- USlakes$RESERVOIR[match(area_timeseries$id, USlakes$ID)]
+
+for(i in 1:length(unique(area_timeseries$id))){
+area_timeseries$Reservoir[i] <- ifelse(area_timeseries$id[i]== USlakes$ID, area_timeseries$Reservoir[i] <- USlakes$RESERVOIR, 
+                                    area_timeseries$Reservoir[i] <- NA)  
+}
+                                         
 
 #select only relevent cols and remove negative rows
-InData <- area_timeseries %>% select(date, id, area_rm_missing) %>%
+InData <- area_timeseries %>% select(date, id, area_rm_missing, Reservoir) %>%
             filter(area_rm_missing >=0) %>% group_by(id) %>%
             mutate(SeqTime = time(date)) #might have to fix this if looking across multiple lakes
 
 #subset area timeseries to one lake
-InData <- InData[InData$id=="718893",] #647128, 572881, 470900, 718893
-#plot(InData$area_rm_missing~InData$date,type="l")    
+InData <- InData[InData$id=="698472",] #647128, 572881, 470900, 718893, 712381, 729711, 735202, 698472
+plot(InData$area_rm_missing~InData$date,type="l")    
 
 #normalize data
 InData$area_normalized <- (InData$area_rm_missing - mean(InData$area_rm_missing)) / sd(InData$area_rm_missing)
@@ -49,7 +59,7 @@ output$period <- round((output$period * SamplingPeriod), digits = 4)  #period is
 #View(output$period)
 
 #calculating mean global power per scale period 
-ScalePower <- c(1:97) # make sure this matches power length
+ScalePower <- c(1:ncol(output$Power)) # make sure this matches power length
 for (j in 1:ncol(output$Power)) {
   ScalePower[j] <- mean(output$Power[,j])
 }
@@ -81,7 +91,7 @@ grid()
 #creating plot; THIS CAN TAKE A WHILE. Don't try and run other functions until plot is completely rendered in plot window (R will get angry and crash)
 #make new graphical function to fix period vs. scale issue
 
-#jpeg("./figures/lake_718893_wavelet.jpg", width = 6, height = 4, units = "in",res = 300)
+#jpeg("./figures/lake_698472_wavelet.jpg", width = 6, height = 4, units = "in",res = 300)
 cols1<-c('blue3', 'blue', "dodgerblue3", "cyan", "green", "greenyellow", "yellow","orange","red", "red3")
 if (PlotHeatWave){
   print('Plotting heat map may take several minutes...')
