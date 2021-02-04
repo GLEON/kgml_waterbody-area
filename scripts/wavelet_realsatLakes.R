@@ -3,7 +3,7 @@
 # 25 Jan 2021 - HLW
 
 #read in libraries
-pacman::p_load(zoo,dplR,dplyr,tidyverse,ggplot2,ggpubr)
+pacman::p_load(zoo,dplR,dplyr,tidyverse,ggplot2,ggpubr,sf)
 
 #-------------------------------------------------------------------------------#
 #### User setup generated signal
@@ -17,20 +17,14 @@ USlakes <- read_sf("data/ReaLSAT-R-2.0.shp")
 #add reservoir col to timeseries
 area_timeseries$Reservoir <- USlakes$RESERVOIR[match(area_timeseries$id, USlakes$ID)]
 
-for(i in 1:length(unique(area_timeseries$id))){
-area_timeseries$Reservoir[i] <- ifelse(area_timeseries$id[i]== USlakes$ID, area_timeseries$Reservoir[i] <- USlakes$RESERVOIR, 
-                                    area_timeseries$Reservoir[i] <- NA)  
-}
-                                         
-
 #select only relevent cols and remove negative rows
 InData <- area_timeseries %>% select(date, id, area_rm_missing, Reservoir) %>%
             filter(area_rm_missing >=0) %>% group_by(id) %>%
             mutate(SeqTime = time(date)) #might have to fix this if looking across multiple lakes
 
 #subset area timeseries to one lake
-InData <- InData[InData$id=="698472",] #647128, 572881, 470900, 718893, 712381, 729711, 735202, 698472
-plot(InData$area_rm_missing~InData$date,type="l")    
+InData <- InData[InData$id=="705918",] #lakes: 647128, 572881, 470900, 718893, 712381, 729711, 735202, 698472
+#plot(InData$area_rm_missing~InData$date,type="l")    #Reservoirs: 712490, 712642, 712700, 712459, 705670, 705918
 
 #normalize data
 InData$area_normalized <- (InData$area_rm_missing - mean(InData$area_rm_missing)) / sd(InData$area_rm_missing)
@@ -91,7 +85,7 @@ grid()
 #creating plot; THIS CAN TAKE A WHILE. Don't try and run other functions until plot is completely rendered in plot window (R will get angry and crash)
 #make new graphical function to fix period vs. scale issue
 
-#jpeg("./figures/lake_698472_wavelet.jpg", width = 6, height = 4, units = "in",res = 300)
+#jpeg("./figures/lake_705918_wavelet.jpg", width = 6, height = 4, units = "in",res = 300)
 cols1<-c('blue3', 'blue', "dodgerblue3", "cyan", "green", "greenyellow", "yellow","orange","red", "red3")
 if (PlotHeatWave){
   print('Plotting heat map may take several minutes...')
