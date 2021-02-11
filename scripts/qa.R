@@ -1,7 +1,7 @@
 source("scripts/99_packages.R")
 source("scripts/99_utils.R")
 
-# compare shapefile areas with time-series area
+# compare shapefile areas with time-series area ----
 dt_area    <- readRDS("data/area_timeseries.rds")
 dt_sf      <- st_read("data/dt_us_pnt.gpkg")
 
