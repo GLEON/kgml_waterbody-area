@@ -14,9 +14,9 @@ library(sf)
 
 
 #  reading files ----
-area_timeseries <- readRDS("data/area_timeseries.rds")
+area_timeseries <- readRDS("data/area_timeseries_all.rds")
 dt_us_pnt <- sf::st_read("data/dt_us_pnt.gpkg")
-dt_us <- sf::st_read("data/dt_us.gpkg")
+# dt_us <- sf::st_read("data/dt_us.gpkg")
 
 #  setting all -1 to NA
 area_timeseries[is.na(area_timeseries)] <- -1
