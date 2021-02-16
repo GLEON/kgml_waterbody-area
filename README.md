@@ -25,7 +25,7 @@ for more details.
 
 AREA: number of LANDSAT 30-m pixels covered by the water body. This area
 was calculated by counting pixels in a water body that exists as water
-atleast 10 % of the time.
+at least 10 % of the time.
 
 Hylak\_id: The water body ID based on the HydroLAKES dataset. Water
 bodies that are not present in HdyroLAKEs but are available in ReaLSAT
@@ -53,7 +53,7 @@ corrected by the algorithms.
 
 Column 3: area; in units of sq km
 
------
+------------------------------------------------------------------------
 
 ## Links
 
