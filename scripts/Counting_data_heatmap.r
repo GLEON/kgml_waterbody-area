@@ -12,20 +12,48 @@ library(modifiedmk)
 library(sf)
 
 #  reading files ---- choose all lakes ('area_timeseries_all') or lakes > 80ha ('area_timeseries')
-area_timeseries_all <- readRDS("data/area_timeseries_all.rds")
-#area_timeseries <- readRDS("data/area_timeseries.rds")
+#area_timeseries_all <- readRDS("data/area_timeseries_all.rds")
+area_timeseries <- readRDS("data/area_timeseries.rds")
 
 #  setting all NA to -1
-#area_timeseries[is.na(area_timeseries)] <- -1
-area_timeseries_all[is.na(area_timeseries_all)] <- -1
+area_timeseries[is.na(area_timeseries)] <- -1
+#area_timeseries_all[is.na(area_timeseries_all)] <- -1
 
 #  Counting number of months available per year per lake/reservoir ----
-#area_timeseries$count <- ave(area_timeseries$area == "-1", area_timeseries$id,area_timeseries$year, FUN=cumsum)
-area_timeseries_all$count <- ave(area_timeseries_all$area == "-1", area_timeseries_all$id,area_timeseries_all$year, FUN=cumsum)
+area_timeseries$count <- ave(area_timeseries$area == "-1", area_timeseries$id,area_timeseries$year, FUN=cumsum)
+#area_timeseries_all$count <- ave(area_timeseries_all$area == "-1", area_timeseries_all$id,area_timeseries_all$year, FUN=cumsum)
 
 #  Group by id and year and get the max count per year
-#area_count <- area_timeseries %>% group_by(id,year) %>% summarise(max_count=max(count))
-area_all_count <- area_timeseries_all %>% group_by(id,year) %>% summarise(max_count=max(count))
+area_count <- area_timeseries %>% 
+  group_by(id,year) %>% 
+  summarise(max_count=max(count)) %>% 
+  mutate(perc_missing = max_count/12 * 100)
+#area_all_count <- area_timeseries_all %>% group_by(id,year) %>% summarise(max_count=max(count))
+
+# Get percentage of missing data per lake
+area_timeseries <- mutate(area_timeseries, missing = (area == -1))
+perc_missing <- area_timeseries %>% 
+  group_by(id) %>%
+  summarise(perc_missing = round(length(id[area_rm_missing == -1])/length(id)*100))
+
+# Get the runlength of missing values:
+lake_ids <- unique(area_timeseries$id)
+RLE_summary <- data.frame(matrix(ncol = 4))
+colnames(RLE_summary) <- c("id", "min_rle", "max_rle", "count_rle")
+
+for (i in lake_ids) {
+  df <- filter(area_timeseries, id == i)
+  RLE <- rle(df$missing)
+  df_RLE <- filter(data.frame(length = RLE$lengths, values = RLE$values), values == 'TRUE')
+  RLE_summary[(nrow(RLE_summary) + 1), 1] <- i
+  RLE_summary[(nrow(RLE_summary)), 2] <- min(df_RLE$length)
+  RLE_summary[(nrow(RLE_summary)), 3] <- max(df_RLE$length)
+  RLE_summary[(nrow(RLE_summary)), 4] <- length(df_RLE$length)
+}
+
+RLE_summary <- na.omit(RLE_summary)
+RLE_summary <- merge(RLE_summary, perc_missing)
+write.csv(RLE_summary, "RLE_summary.csv")
 
 # Execute if doing heatmap:
 
