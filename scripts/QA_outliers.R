@@ -11,7 +11,9 @@ area_timeseries <- readRDS("data/area_timeseries_all.rds")
 dt_us_pnt <- sf::st_read("data/dt_us_pnt.gpkg")
 
 # ephemeral lake id =="714607"
-df <- area_timeseries %>% filter (id=="714607")
+# regular lake id == 458167
+df <- area_timeseries %>% filter (id=="458167")
+
 
 #  selecting date and area only
 df <- df %>% select(date,area)
@@ -65,6 +67,12 @@ remove_outliers_iqr <- function(x, na.rm = TRUE, ...) {
 df <- df %>% mutate(area_sd = remove_outliers_sd(df$area),area_mad = remove_outliers_MAD(area),
                     area_iqr = remove_outliers_iqr(area))
 
+plot(df$date,df$area)
+
+
+#  ephemeral lake
+dg 
+plot(dg$date,dg$area)
 #  plot
 ggplot(melt(df,id.vars="date"), aes(x = date, y=value,col=variable)) + 
   geom_point()
@@ -121,22 +129,5 @@ ggplot() +
          panel.background = element_blank())
 dev.off()
 
-#  histogram showing how many lakes have bigger area
-png("figures/lakesize.png", units="in", width=9, height=6, res=300)
-ggplot(data = data, aes(x = mean_area)) +
-  geom_histogram(position = "dodge", col = "black",bins = 20)+
-  # stat_bin(bins= 20, geom="text", aes(label=..count..) , 
-  #          vjust = -1) + 
-  labs(x="Mean area in km2",y="No. of lakes",title="")
-  # scale_x_continuous(breaks = c(100,1000,20000,40000,60000,70000,80000))
-dev.off()
 
-png("figures/sd.png", units="in", width=9, height=6, res=300)
-ggplot(data = data, aes(x = sd)) +
-  geom_histogram(position = "dodge", col = "black",bins = 20)+
-  # stat_bin(bins= 20, geom="text", aes(label=..count..) , 
-  #          vjust = -1) + 
-  labs(x="Standard deviation [km2]",y="No. of lakes",title="")
-# scale_x_continuous(breaks = c(100,1000,20000,40000,60000,70000,80000))
-dev.off()
 
