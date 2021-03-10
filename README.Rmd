@@ -28,7 +28,7 @@ RESERVOIR: categorizes water bodies into two sets - 1 represents reservoirs manu
 
 TAG: categorizes the water bodies into two sets - 1 represents water bodies for which changes made by the ORBIT algorithm (correcting erroneous labels in GSW dataset and filling missing labels) are more reliable. Please refer to the paper (https://www.cs.umn.edu/sites/cs.umn.edu/files/tech_reports/20-002.pdf) for more details.
 
-AREA: number of LANDSAT 30-m pixels covered by the water body. This area was calculated by counting pixels in a water body that exists as water at least 10 % of the time.
+AREA: number of LANDSAT 30-m pixels covered by the water body. This area was calculated by counting pixels in a water body that exists as water atleast 10 % of the time.
 
 Hylak_id: The water body ID based on the HydroLAKES dataset. Water bodies that are not present in HdyroLAKEs but are available in ReaLSAT have ID as 0.
 

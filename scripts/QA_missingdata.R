@@ -13,8 +13,8 @@ library(sf)
 
 #  reading files ---- choose all lakes ('area_timeseries_all') or lakes > 80ha ('area_timeseries')
 
-area_timeseries <- readRDS("data/area_timeseries.rds")
-dt_us_pnt <- sf::st_read("data/dt_us_pnt.gpkg")
+area_timeseries <- readRDS("data/area_timeseries_all.rds")
+dt_us_pnt <- sf::st_read("data/dt_us_pnt_all.gpkg")
 
 
 #  setting all -1 to NA
@@ -36,14 +36,14 @@ area_timeseries$count <- ave(area_timeseries$area == "-1",area_timeseries$year, 
 #  Group by id, year and season and get the max count per year
 area_count <- area_timeseries %>% group_by(id,year,season) %>% summarise(max_count=max(count))
 
-data <- filter(area_count,season=="Spring")
+data <- filter(area_count,season=="Winter")
 
-png("figures/Histogram_data_quality_spring.png", units="in", width=11, height=8, res=300)
+png("figures/Histogram_data_quality_winter_all_lakes.png", units="in", width=11, height=8, res=300)
 ggplot(data, aes(x = max_count)) +
   geom_histogram(position = "dodge", binwidth = 1, col = "black") +
   facet_wrap(vars(year)) +
   scale_x_continuous(breaks = c(0,1,2,3)) +
-  labs(x="No. of missing months",y="No. of lakes with A > 80km2",title="") +
+  labs(x="No. of missing months in the Winter season",y="No. of lakes (Total=103,932)",title="") +
   # geom_vline(xintercept = 5, color = "red") +
   theme_bw() + theme(panel.grid.major = element_blank(),
                      strip.placement = "outside",
