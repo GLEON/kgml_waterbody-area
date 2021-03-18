@@ -84,6 +84,24 @@ y = np.load(
 print(X.shape, y.shape)
 
 print("#######################################################################")
+print("RAW DATA EXPLORATION")
+np.unique(y)
+dt = pd.DataFrame(np.c_[X, y])
+dt = dt.rename(columns={259: "emotion", 258: "test"})
+dt["test"] = pd.to_numeric(dt["test"])
+
+dt.groupby("emotion").describe()
+sns.histplot(x="emotion", data=dt)
+plt.show()
+
+ax = sns.violinplot(x="emotion", y="test", data=dt)
+plt.show()
+
+dt_median = dt.groupby("emotion").apply(lambda x: x.median())
+dt_median.apply(np.median, axis=1)
+
+
+print("#######################################################################")
 print("TRAIN VAL TEST SPLIT")
 train_X, test_X, train_y, test_y = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
