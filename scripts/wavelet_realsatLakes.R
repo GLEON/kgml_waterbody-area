@@ -6,30 +6,47 @@
 pacman::p_load(zoo,dplR,dplyr,tidyverse,ggplot2,ggpubr,sf)
 
 #-------------------------------------------------------------------------------#
-#read in realsat data
+#read in realsat data (NOTE - this is non-interpolated data for the <10,000 contiguous US lakes)
 area_timeseries = readRDS("./data/area_timeseries.rds")
 USlakes <- read_sf("data/ReaLSAT-R-2.0.shp")
 
+#read in reconstructed data from LSTM model and lake IDs
+recon_data <- read_csv(file.path(getwd(),"/data/reconstructed_data.csv"))
+lakeIDs <- read_csv(file.path(getwd(),"/data/X_ids_v2.csv")) %>% select(-X1)
+
+#merge lake IDs and recon_data
+area_timeseries_interp <- cbind(recon_data,lakeIDs)
+
+#wide to long
+area_timeseries_interp <- area_timeseries_interp %>% pivot_longer(!id, names_to = "timestep", values_to = "area")
+
 #add reservoir col to timeseries
 area_timeseries$Reservoir <- USlakes$RESERVOIR[match(area_timeseries$id, USlakes$ID)]
+area_timeseries_interp$Reservoir <- USlakes$RESERVOIR[match(area_timeseries_interp$id, USlakes$ID)]
 
-#select only relevent cols and remove negative rows
-InData <- area_timeseries %>% select(date, id, area_rm_missing, Reservoir) %>%
-  filter(area_rm_missing >=0) %>% group_by(id) %>%
-  mutate(SeqTime = time(date)) #might have to fix this if looking across multiple lakes
+#select only relevant cols and remove negative rows
+#InData <- area_timeseries %>% select(date, id, area_rm_missing, Reservoir) %>%
+#  filter(area_rm_missing >=0) %>% group_by(id) %>%
+#  mutate(SeqTime = time(date)) #might have to fix this if looking across multiple lakes
+
+final_area <- area_timeseries_interp %>%
+  filter(area >=0) %>% group_by(id) #removing the neg area values - check to make sure it is okay for LSTM model to generate neg areas!
 
 #subset area timeseries to one lake
-InData <- InData[InData$id=="712490",] #lakes: 647128, 572881, 470900, 718893, 712381, 729711, 735202, 698472
+#InData <- InData[InData$id=="712490",] #lakes: 647128, 572881, 470900, 718893, 712381, 729711, 735202, 698472
 #plot(InData$area_rm_missing~InData$date,type="l")    #Reservoirs: 712490, 712642, 712700, 712459, 705670, 705918
 
+InData <- final_area[final_area$id=="677124",]
+#plot(InData$area~InData$timestep,type="l")
+
 #normalize data
-InData$area_normalized <- (InData$area_rm_missing - mean(InData$area_rm_missing)) / sd(InData$area_rm_missing)
+InData$area_normalized <- (InData$area - mean(InData$area)) / sd(InData$area)
 
 nInData = dim(InData)[1]
 
 #### User setup generated signal
 NativeSamplingPeriod = 1/12 # normalized to year 
-nYears = length(unique(as.numeric(format(InData$date, "%Y")))) # duration
+nYears = length(InData$timestep) #unique(as.numeric(format(InData$date, "%Y")))) # duration
 
 PlotHeatWave = TRUE # whether or not to plot the heat map of the wavelet transform
 # End user setup
@@ -44,7 +61,7 @@ SamplingPeriod = NativeSamplingPeriod
 options("max.contour.segments" = 250000) # can make number larger if needed 
 
 #Wavelet analysis is this line!
-output<-morlet(myData$area_normalized, myData$SeqTime, dj=1/12, siglvl = 0.95,p2=9) ###p2 is 2^ whatever value that's set. # NULL sets p2 to 15. #Chose 14.5 so that plot has minimal area above COI
+output<-morlet(myData$area_normalized, as.numeric(myData$timestep), dj=1/12, siglvl = 0.95,p2=9) ###p2 is 2^ whatever value that's set. # NULL sets p2 to 15. #Chose 14.5 so that plot has minimal area above COI
 #NOTE: had to revert to default p2 because would not plot (I think numbers/dataframe too large??)
 
 # Post processing wavelet transform
@@ -85,7 +102,7 @@ grid()
 #creating plot; THIS CAN TAKE A WHILE. Don't try and run other functions until plot is completely rendered in plot window (R will get angry and crash)
 #make new graphical function to fix period vs. scale issue
 
-#jpeg("./figures/lake_712490_wavelet_p2=9.jpg", width = 6, height = 4, units = "in",res = 300)
+#jpeg("./figures/interpolated_lake_677124_wavelet_p2=9.jpg", width = 6, height = 4, units = "in",res = 300)
 cols1<-c('blue3', 'blue', "dodgerblue3", "cyan", "green", "greenyellow", "yellow","orange","red", "red3")
 if (PlotHeatWave){
   print('Plotting heat map may take several minutes...')
