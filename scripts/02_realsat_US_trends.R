@@ -86,6 +86,12 @@ ggplot() + geom_point(data=annual_timeseries, aes(x=mean_area, y=year)) +
 ggplot() + geom_point(data=subset(annual_timeseries,!is.na(annual_change)), aes(x=annual_change, y=year)) +
   scale_color_viridis_d() + theme_classic()
 
+#all waterbodies
+#jpeg("./figures/Lake_area_map.jpg", width = 6, height = 4, units = "in",res = 300)
+ggplot() +geom_point(data=US_lake_area,aes(x=lat,y=long, color=factor(RESERVOIR), alpha=AREA)) +
+  borders("state") + labs(color="Reservoir", alpha="Area") +xlab("latitude") +ylab("longitude") 
+#dev.off()
+
 #create map of lake area for small, med, and large lakes
 ggplot() +geom_point(data=subset(US_lake_area, LakeSize %in% "small"),aes(x=lat,y=long, color=factor(RESERVOIR), alpha=AREA)) +
   borders("state") 
