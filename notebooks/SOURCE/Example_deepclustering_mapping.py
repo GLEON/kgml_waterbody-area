@@ -55,7 +55,7 @@ x_ids = pd.read_csv("notebooks/INPUT/REALSAT_TIMESERIES/X_ids_v2.csv")
 x_ids = x_ids.loc[0:3199]  # notebook trains on first 3200 rows
 x_ids = pd.DataFrame(x_ids["id"])
 
-y_pred = pd.read_csv("notebooks/OUTPUT/Joe/REALSAT_TIMESERIES/RESULT/y_pred.csv")
+y_pred = pd.read_csv("notebooks/OUTPUT/Jem/REALSAT_TIMESERIES/RESULT/y_pred.csv")
 y_pred = pd.DataFrame(y_pred["cluster_id"])
 
 y_pred = pd.concat(

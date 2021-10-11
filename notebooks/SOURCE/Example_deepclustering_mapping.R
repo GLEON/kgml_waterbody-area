@@ -7,7 +7,7 @@ x_ids <- read.csv("notebooks/INPUT/REALSAT_TIMESERIES/X_ids.csv",
   stringsAsFactors = FALSE)
 x_ids <- x_ids[1:3200, "id"] # notebook trains on first 3200 rows
 
-y_pred <- read.csv("notebooks/OUTPUT/Joe/REALSAT_TIMESERIES/RESULT/y_pred.csv",
+y_pred <- read.csv("notebooks/OUTPUT/Jem/REALSAT_TIMESERIES/RESULT/y_pred.csv",
   stringsAsFactors = FALSE)
 y_pred <- cbind(x_ids, y_pred)
 
