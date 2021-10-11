@@ -5,7 +5,7 @@ data/ReaLSAT.zip
 
 %.zip:
 	wget -O $@ $(patsubst data/%, http://umnlcc.cs.umn.edu/realsat/data/%, $@)
-	unzip $@ -d data
+	Rscript -e "archive::archive_extract('$@', dir = 'data')"	
 
 clean:
 	-rm data/monthly_timeseries.zip
