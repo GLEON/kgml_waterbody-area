@@ -1,0 +1,15 @@
+name: realsat
+channels:
+- nvidia
+- pytorch
+- conda-forge
+dependencies:
+        - python>3
+        - pandas
+        - folium
+        - seaborn
+        - numpy
+        - scikit-learn
+        - cudatoolkit=10.2
+        - pytorch
+        - geopandas

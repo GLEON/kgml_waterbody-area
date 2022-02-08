@@ -1,6 +1,5 @@
-# This script is to analyze realsat data 
 rm(list = ls())
-setwd("C:/Users/Maartje/OneDrive - McGill University/Lake_Expedition_2020/Realsat/Lake_expedition")
+# setwd("C:/Users/Maartje/OneDrive - McGill University/Lake_Expedition_2020/Realsat/Lake_expedition")
 
 library(zoo)
 library(tidyverse)
@@ -12,110 +11,145 @@ library(modifiedmk)
 library(sf)
 
 #  reading files ---- choose all lakes ('area_timeseries_all') or lakes > 80ha ('area_timeseries')
-#area_timeseries_all <- readRDS("data/area_timeseries_all.rds")
-area_timeseries <- readRDS("data/area_timeseries.rds")
+area_timeseries_all <- readRDS("data/area_timeseries_all.rds")
+# area_timeseries <- readRDS("data/area_timeseries.rds")
 
 #  setting all NA to -1
-area_timeseries[is.na(area_timeseries)] <- -1
-#area_timeseries_all[is.na(area_timeseries_all)] <- -1
+# area_timeseries[is.na(area_timeseries)] <- -1
+area_timeseries_all[is.na(area_timeseries_all)] <- -1
+
 
 #  Counting number of months available per year per lake/reservoir ----
-area_timeseries$count <- ave(area_timeseries$area == "-1", area_timeseries$id,area_timeseries$year, FUN=cumsum)
-#area_timeseries_all$count <- ave(area_timeseries_all$area == "-1", area_timeseries_all$id,area_timeseries_all$year, FUN=cumsum)
+# area_timeseries$count <- ave(area_timeseries$area == "-1", area_timeseries$id,area_timeseries$year, FUN=cumsum)
+
+# do not execute this xxxx
+# area_timeseries_all$count <- ave(area_timeseries_all$area == "-1", area_timeseries_all$id,area_timeseries_all$year, FUN=cumsum)
 
 #  Group by id and year and get the max count per year
-area_count <- area_timeseries %>% 
-  group_by(id,year) %>% 
-  summarise(max_count=max(count)) %>% 
-  mutate(perc_missing = max_count/12 * 100)
+# xxxx
+# area_count <- area_timeseries_all %>% 
+#   group_by(id,year) %>% 
+#   summarise(max_count=max(count)) %>% 
+#   mutate(perc_missing = max_count/12 * 100)
 #area_all_count <- area_timeseries_all %>% group_by(id,year) %>% summarise(max_count=max(count))
 
 # Get percentage of missing data per lake
-area_timeseries <- mutate(area_timeseries, missing = (area == -1))
-perc_missing <- area_timeseries %>% 
-  group_by(id) %>%
-  summarise(perc_missing = round(length(id[area_rm_missing == -1])/length(id)*100))
+area_timeseries_all <- mutate(area_timeseries_all, missing = (area == -1))
+# perc_missing <- area_timeseries_all %>% 
+#   group_by(id) %>%
+#   summarise(perc_missing = round(length(id[area_rm_missing == -1])/length(id)*100))
 
 # Get the runlength of missing values:
-lake_ids <- unique(area_timeseries$id)
-RLE_summary <- data.frame(matrix(ncol = 4))
-colnames(RLE_summary) <- c("id", "min_rle", "max_rle", "count_rle")
+lake_ids <- unique(area_timeseries_all$id)
+# RLE_summary <- data.frame(matrix(ncol = 4))
+# colnames(RLE_summary) <- c("id", "min_rle", "max_rle", "count_rle")
 
-for (i in lake_ids) {
-  df <- filter(area_timeseries, id == i)
-  RLE <- rle(df$missing)
-  df_RLE <- filter(data.frame(length = RLE$lengths, values = RLE$values), values == 'TRUE')
-  RLE_summary[(nrow(RLE_summary) + 1), 1] <- i
-  RLE_summary[(nrow(RLE_summary)), 2] <- min(df_RLE$length)
-  RLE_summary[(nrow(RLE_summary)), 3] <- max(df_RLE$length)
-  RLE_summary[(nrow(RLE_summary)), 4] <- length(df_RLE$length)
+# selecting post 2000
+area_timeseries_post2000 <- filter(area_timeseries_all,year >= 2000)
+# creating summary post 2000 
+
+# getting the same with a faster code 
+rlength <- function(x){
+  
+  rlen <- rle(x$missing)
+  rlen.filter <- filter(data.frame(length = rlen$lengths, values = rlen$values), values == 'TRUE')
+  min <- min(rlen.filter$length)
+  max <- max(rlen.filter$length)
+  length <- length(rlen.filter$length)
+  id <- x$id[1]
+  df <- data.frame(id=id,min=min,max=max,length=length)
 }
 
-RLE_summary <- na.omit(RLE_summary)
-RLE_summary <- merge(RLE_summary, perc_missing)
-write.csv(RLE_summary, "RLE_summary.csv")
+#  getting all lakes----
 
-# Execute if doing heatmap:
+data_rle_all <- lapply(split(area_timeseries_all,area_timeseries_all$id),function(area_timeseries_all) ((rlength(area_timeseries_all))))
+data_rle_all <- rbindlist(data_rle_all, idcol = TRUE)
+data_rle_all <- na.omit(data_rle_all)
+data_rle_all_filter <- filter(data_rle_all,min != "Inf",max!= "-Inf" )
 
-# area_count <- area_count[1:2243,] 
-# area_count$id <- as.character(area_count$id)
+# x <- filter(area_timeseries_all,id=="574514")
 
-#  ploting a heatmap of data availability
-# textcol <- "grey40"
+# getting rle for post 2000 ----
+data_rle <- lapply(split(area_timeseries_post2000,area_timeseries_post2000$id),function(area_timeseries_post2000) ((rlength(area_timeseries_post2000))))
+data_rle <- rbindlist(data_rle, idcol = TRUE)
+#  removing na
+data_rle <- na.omit(data_rle)
+# removing lakes that don't have missing data
+data_rle_filter <- filter(data_rle,min != "Inf",max!= "-Inf" )
+# some lakes don't have any missing gaps e.g. id=574514
+#  around 15750 don't have any missing data at all!
 
-# png("Data_availability.png", units="in", width=11, height=6, res=300)
-# ggplot(area_count,aes(x=year,y=id,fill=max_count))+
-#   geom_tile(colour="white",size=0.2,height=0.6)+
-#   guides(fill=guide_legend(title="# Months missing data"))+
-#   labs(x="",y="",title="")+
-#   scale_fill_viridis_c()+
-#   scale_y_discrete(expand=c(0,0))+
-#   theme_grey(base_size=10)+
-#   theme(legend.position="right",legend.direction="vertical",
-#         legend.title=element_text(colour=textcol),
-#         legend.margin=margin(grid::unit(0,"cm")),
-#         legend.text=element_text(colour=textcol,size=7,face="bold"),
-#         legend.key.height=grid::unit(0.8,"cm"),
-#         legend.key.width=grid::unit(0.2,"cm"),
-#         axis.text.x=element_text(size=10,colour=textcol),
-#         axis.text.y=element_text(vjust=0.6,colour=textcol),
-#         axis.ticks=element_line(size=0.4),
-#         plot.background=element_blank(),
-#         panel.border=element_blank(),
-#         plot.margin=margin(0.7,0.4,0.1,0.2,"cm"),
-#         plot.title=element_text(colour=textcol,hjust=0,size=14,face="bold"))+
-#   labs(y="ID",x=element_blank(), colour = "")+theme_bw()
-# dev.off()
 
-# Plotting a histogram of 'number of months with data gaps' by 'number of lakes', faceted by year (excluding 0 counts and 2015)
-#lake_count <- length(unique(area_all_count$id))
-#area_count_histo <- area_all_count %>% 
-#  #filter(max_count > 0) %>% 
-#  filter(year != '2015')
+# for (i in lake_ids) {
+#   df <- filter(area_timeseries_all, id == i)
+#   RLE <- rle(df$missing)
+#   df_RLE <- filter(data.frame(length = RLE$lengths, values = RLE$values), values == 'TRUE')
+#   RLE_summary[(nrow(RLE_summary) + 1), 1] <- i
+#   RLE_summary[(nrow(RLE_summary)), 2] <- min(df_RLE$length)
+#   RLE_summary[(nrow(RLE_summary)), 3] <- max(df_RLE$length)
+#   RLE_summary[(nrow(RLE_summary)), 4] <- length(df_RLE$length)
+# }
+# 
+# RLE_summary <- na.omit(RLE_summary)
+# RLE_summary <- merge(RLE_summary, perc_missing)
+# write.csv(RLE_summary, "RLE_summary.csv")
 
-#png("Histogram_data_quality1.png", units="in", width=11, height=8, res=300)
-#ggplot(data = area_count_histo, aes(x = max_count)) +
-#  geom_histogram(position = "dodge", binwidth = 1, col = "black") +
-#  facet_wrap(~year) +
-#  scale_x_continuous(breaks = c(0,2,4,6,8,10,12)) +
-#  labs(x="No. of missing months",y="No. of lakes (total = 103,932)",title="") +
-#  geom_vline(xintercept = 5, color = "red") +
-#  theme_bw() + theme(panel.grid.major = element_blank(),
-#                    strip.placement = "outside",
-#                     strip.text = element_text(size = 11, face = "bold"),
-#                     axis.text = element_text(size = 11),
-#                    axis.title = element_text(size = 14))
-#dev.off()
+#  all years pre 2000 --------------- ------------------------------------------
 
-#Plotting a histogram showing number of lakes with no gaps by year
-#area_count_zero <- area_all_count %>% 
-#  filter(max_count == 0)
+png("figures/Histogram_qa_rle_min_all.png", units="in", width=9, height=6, res=300)
+ggplot(data = data_rle_all_filter, aes(x = min)) +
+  geom_histogram(position = "dodge", binwidth = 1, col = "black") +
+  scale_x_continuous(breaks = seq(1,26,2)) +
+  labs(x="Min_rle",y="No. of lakes (Total=103,932 lakes)",title="") +
+  theme_bw() + theme(panel.grid.major = element_blank(),
+                     strip.placement = "outside",
+                     strip.text = element_text(size = 11, face = "bold"),
+                     axis.text = element_text(size = 11),
+                     axis.title = element_text(size = 14))
+dev.off()
 
-#png("Histogram_data_quality2.png", units="in", width=9, height=6, res=300)
-#ggplot(data = area_count_zero, aes(year)) +
-#  geom_histogram(position = "dodge", binwidth = 1, col = "black") +
-#  labs(x="",y="No. of lakes with no data gaps (total = 103,932)",title="") +
-#  scale_x_continuous(breaks = c(1985,1990,1995,2000,2005,2010,2015)) +
-#  theme_bw() + theme(axis.text = element_text(size = 11),
-#                     axis.title = element_text(size = 12))
-#dev.off()
+
+png("figures/Histogram_qa_rle_max_all.png", units="in", width=9, height=6, res=300)
+ggplot(data = data_rle_all_filter, aes(x = max)) +
+  geom_histogram(position = "dodge", binwidth = 1, col = "black") +
+  scale_x_continuous(breaks = seq(0,221,10)) +
+  labs(x="Max_rle",y="No. of lakes (Total=103,932 lakes)",title="") +
+  theme_bw() + theme(panel.grid.major = element_blank(),
+                     strip.placement = "outside",
+                     strip.text = element_text(size = 11, face = "bold"),
+                     axis.text = element_text(size = 11),
+                     axis.title = element_text(size = 14))
+dev.off()
+
+#  some lakes have lots of missing data e.g. 526033
+
+
+
+#  post 2000 -------------------------------------------------------------------
+
+png("figures/Histogram_qa_rle_min_post2000_all.png", units="in", width=9, height=6, res=300)
+ggplot(data = data_rle_filter, aes(x = min)) +
+  geom_histogram(position = "dodge", binwidth = 1, col = "black") +
+  scale_x_continuous(breaks = c(1,2,3,4,5,6,7,8,9,10,11,12)) +
+  labs(x="Min_rle",y="No. of lakes (Total=103,932 lakes)",title="") +
+  theme_bw() + theme(panel.grid.major = element_blank(),
+                     strip.placement = "outside",
+                     strip.text = element_text(size = 11, face = "bold"),
+                     axis.text = element_text(size = 11),
+                     axis.title = element_text(size = 14))
+dev.off()
+
+png("figures/Histogram_qa_rle_max_post2000_all.png", units="in", width=9, height=6, res=300)
+breaks <- seq(0,92,3)
+ggplot(data = data_rle_filter, aes(x = max)) +
+  geom_histogram(position = "dodge", binwidth = 1, col = "black") +
+  scale_x_continuous(breaks = breaks) +
+  labs(x="Max_rle",y="No. of lakes (Total=103,932 lakes)",title="") +
+  theme_bw() + theme(panel.grid.major = element_blank(),
+                     strip.placement = "outside",
+                     strip.text = element_text(size = 11, face = "bold"),
+                     axis.text = element_text(size = 11),
+                     axis.title = element_text(size = 14))
+dev.off()
+
+

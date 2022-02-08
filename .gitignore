@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 data
+test.py
+.envrc
+.vscode/
