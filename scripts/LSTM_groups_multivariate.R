@@ -20,7 +20,7 @@ LSTM_df <- read.csv(file.path(lake_directory,"data/all_groups.csv")) %>% select(
 #read in driver data
 driver_df <- read.csv(file.path(lake_directory,"data/pr_temp_elev_us_1985_2015.csv")) %>% select(-c(X))
 
-#subset df so can manipulate relevant columns 
+#subset df so can manipulate relevant columns for PCA
 LSTM_areas <- LSTM_df[,c(1,2,5,8,9,60,61)]
 
 #drop NA rows
@@ -69,12 +69,17 @@ ggsave(file.path(lake_directory,"figures/pca/PCA_drivers_dim12.jpg"),
        units="in", width=5, height=4, dpi=300, device="jpeg")
 
 fviz_pca_biplot(res.pca,
-                col.var = "#2E9FDF", # Variables color
-                col.ind = "#696969",  # Individuals color
+                addEllipses=TRUE, ellipse.level=0.95,
+                palette = c("lancet"),
                 geom = "point",
+                geom.ind = "geom",
+                geom.var = c("arrow","points", "text"),
+                col.var = "black",
+                habillage = as.factor(LSTM_areas_noids$Group_num),
+                legend.title = "KG clusters",
                 axes = c(1,2)
 )
-ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12.jpg"),
+ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
                  units="in", width=5, height=4, dpi=300, device="jpeg")
 
 #add groups to df
@@ -82,13 +87,14 @@ LSTM_areas_noids$Group_num <- groups$Group_num
 
 fviz_pca_ind(res.pca,
              col.ind = as.factor(LSTM_areas_noids$Group_num), # color by groups
-             palette = c("jco"), pointshape=16,
+             palette = c("lancet"), pointshape=16,
              addEllipses = TRUE, # Concentration ellipses
-             legend.title = "Groups",
-             geom = "point",
-             axes = c(1,5)
+             legend.title = "KG clusters",
+             geom = c("point"),
+             axes = c(1,2)#,
+            #select.ind = list(cos2 = 50000)
 )
-ggsave(file.path(lake_directory,"figures/pca/PCA_clusters_dim15.jpg"),
+ggsave(file.path(lake_directory,"figures/pca/PCA_clusters_dim12.jpg"),
        units="in", width=5, height=4, dpi=300, device="jpeg")
 
 
