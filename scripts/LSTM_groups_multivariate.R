@@ -12,7 +12,7 @@ lake_directory <- here::here()
 
 # loading the vegan library in order to calculate distance matrices
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(vegan,dplyr,tidyr,ggplot2, gridExtra, MASS, nortest, factoextra)
+pacman::p_load(vegan,dplyr,ggplot2, gridExtra, MASS, nortest, factoextra)
 
 #read in LSTM output
 LSTM_df <- read.csv(file.path(lake_directory,"data/all_groups.csv")) %>% select(-c(X.1,X))
@@ -32,6 +32,9 @@ LSTM_areas$mean_precip <- driver_df$pr_mean
 LSTM_areas$mean_temp <- driver_df$t_mean
 LSTM_areas$mean_elev <- driver_df$elev_mean
 
+##PLAYING WITH SELECTIVE GROUP REMOVAL HERE!!!
+#LSTM_areas <- LSTM_areas[LSTM_areas$Group_num==2 | LSTM_areas$Group_num==3,]
+
 #select only numeric columns
 LSTM_areas_noids <- LSTM_areas[,c(3,6:10)]
 groups <- LSTM_areas[,c(3,5,6:10)]
@@ -39,6 +42,14 @@ groups <- LSTM_areas[,c(3,5,6:10)]
 #remove NAs here - some of the waterbody lat/long do not match with the driver data lat.long so dropping those rows here (1643 waterbodies)
 LSTM_areas_noids <- LSTM_areas_noids[!is.na(LSTM_areas_noids$mean_precip),]
 groups <- groups[!is.na(groups$mean_precip),]
+
+#transform driver data (z-score normalization)
+LSTM_areas_noids$AREA <- (LSTM_areas_noids$AREA - mean(LSTM_areas_noids$AREA)) / sd(LSTM_areas_noids$AREA)
+LSTM_areas_noids$long <- (LSTM_areas_noids$long - mean(LSTM_areas_noids$long)) / sd(LSTM_areas_noids$long)
+LSTM_areas_noids$lat <- (LSTM_areas_noids$lat - mean(LSTM_areas_noids$lat)) / sd(LSTM_areas_noids$lat)
+LSTM_areas_noids$mean_precip <- (LSTM_areas_noids$mean_precip - mean(LSTM_areas_noids$mean_precip)) / sd(LSTM_areas_noids$mean_precip)
+LSTM_areas_noids$mean_temp <- (LSTM_areas_noids$mean_temp - mean(LSTM_areas_noids$mean_temp)) / sd(LSTM_areas_noids$mean_temp)
+LSTM_areas_noids$mean_elev <- (LSTM_areas_noids$mean_elev - mean(LSTM_areas_noids$mean_elev)) / sd(LSTM_areas_noids$mean_elev)
 
 #now pca - spectral decomposition that examines the covariances/correlations between variables
 #we have more samples/lakes that features/drivers so princomp is preferred over prcomp
@@ -68,22 +79,23 @@ fviz_pca_var(res.pca,
 ggsave(file.path(lake_directory,"figures/pca/PCA_drivers_dim12.jpg"),
        units="in", width=5, height=4, dpi=300, device="jpeg")
 
+#add groups to df
+LSTM_areas_noids$Group_num <- groups$Group_num
+
 fviz_pca_biplot(res.pca,
                 addEllipses=TRUE, ellipse.level=0.95,
-                palette = c("lancet"),
-                geom = "point",
-                geom.ind = "geom",
-                geom.var = c("arrow","points", "text"),
+                palette = c("lancet"), pointshape=19,
+                geom.ind = "none",
+                mean.point = TRUE,
+                geom.var = c("arrow","text"),
                 col.var = "black",
                 habillage = as.factor(LSTM_areas_noids$Group_num),
                 legend.title = "KG clusters",
+                repel = TRUE,
                 axes = c(1,2)
-)
-ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
+) 
+ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_groups2+3.jpg"),
                  units="in", width=5, height=4, dpi=300, device="jpeg")
-
-#add groups to df
-LSTM_areas_noids$Group_num <- groups$Group_num
 
 fviz_pca_ind(res.pca,
              col.ind = as.factor(LSTM_areas_noids$Group_num), # color by groups
