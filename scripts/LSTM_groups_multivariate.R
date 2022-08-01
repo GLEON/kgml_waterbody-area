@@ -12,7 +12,7 @@ lake_directory <- here::here()
 
 # loading the vegan library in order to calculate distance matrices
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(vegan,dplyr,ggplot2, gridExtra, MASS, nortest, factoextra)
+pacman::p_load(vegan,ggplot2, gridExtra, MASS, nortest, factoextra, tidyverse)
 
 #read in LSTM output
 LSTM_df <- read.csv(file.path(lake_directory,"data/all_groups.csv")) %>% select(-c(X.1,X))
@@ -52,15 +52,14 @@ LSTM_areas_noids$mean_temp <- (LSTM_areas_noids$mean_temp - mean(LSTM_areas_noid
 LSTM_areas_noids$mean_elev <- (LSTM_areas_noids$mean_elev - mean(LSTM_areas_noids$mean_elev)) / sd(LSTM_areas_noids$mean_elev)
 
 #now pca - spectral decomposition that examines the covariances/correlations between variables
-#we have more samples/lakes that features/drivers so princomp is preferred over prcomp
-princomp(LSTM_areas_noids, cor=TRUE)
+#we have more samples/lakes than features/drivers so princomp is preferred over prcomp
+pca <- princomp(LSTM_areas_noids, cor=TRUE, scores=TRUE)
 
-res.pca <- prcomp(LSTM_areas_noids, scale = TRUE)
-fviz_eig(res.pca)
+fviz_eig(pca)
 ggsave(file.path(lake_directory,"figures/pca/PCA_screeplot.jpg"),
        units="in", width=5, height=4, dpi=300, device="jpeg")
 
-fviz_pca_ind(res.pca,
+fviz_pca_ind(pca,
              col.ind = "cos2", # Color by the quality of representation
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              geom = "point",
@@ -70,7 +69,7 @@ ggsave(file.path(lake_directory,"figures/pca/PCA_lakes_dim12.jpg"),
        units="in", width=5, height=4, dpi=300, device="jpeg")
 
 
-fviz_pca_var(res.pca,
+fviz_pca_var(pca,
              col.var = "contrib", # Color by contributions to the PC
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              geom = c("arrow","text"),
@@ -82,7 +81,7 @@ ggsave(file.path(lake_directory,"figures/pca/PCA_drivers_dim12.jpg"),
 #add groups to df
 LSTM_areas_noids$Group_num <- groups$Group_num
 
-fviz_pca_biplot(res.pca,
+fviz_pca_biplot(pca,
                 addEllipses=TRUE, ellipse.level=0.95,
                 palette = c("lancet"), pointshape=19,
                 geom.ind = "none",
@@ -94,10 +93,10 @@ fviz_pca_biplot(res.pca,
                 repel = TRUE,
                 axes = c(1,2)
 ) 
-ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_groups2+3.jpg"),
+ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
                  units="in", width=5, height=4, dpi=300, device="jpeg")
 
-fviz_pca_ind(res.pca,
+fviz_pca_ind(pca,
              col.ind = as.factor(LSTM_areas_noids$Group_num), # color by groups
              palette = c("lancet"), pointshape=16,
              addEllipses = TRUE, # Concentration ellipses
@@ -111,8 +110,8 @@ ggsave(file.path(lake_directory,"figures/pca/PCA_clusters_dim12.jpg"),
 
 
 #-------------------------------------------------------------------------------#
-# MANOVA 
-#Null = waterbody area is the same across all 7 clusters
+# PERMANOVA (nonparmaetric test; permutational multivariate anova)
+#Null = centroid/spread is the same between clusters
 
 #summary stats for lat, long, and area
 LSTM_areas %>% group_by(Group_num) %>%  summarise(n = n(), mean_area = mean(AREA), mean_lat = mean(lat), mean_long = mean(long), mean_precip = mean(mean_precip, na.rm=T),
@@ -130,24 +129,12 @@ g <- grid.arrange(p1, p2, p3, p4, p5, p6, ncol=3)
 ggsave(file.path(lake_directory,"figures/pca/drivers_by_group.jpg"),
        units="in", width=5, height=4, dpi=300, device="jpeg", g)
 
-#one-way MANOVA
-dep_vars <- cbind(LSTM_areas$AREA, LSTM_areas$lat, LSTM_areas$long, LSTM_areas$mean_precip)
-fit <- manova(dep_vars ~ Group_num, data = LSTM_areas)
-summary(fit) # p < 0.001
-#interpretation = cluster area, lat, long, and mean precip are significantly different
+#PERMANOVA using pca output
+perm_pca <- adonis(pca$scores~ Group_num, data=LSTM_areas)
+#pca scores are the centroid multiplied by the rotation/loadings
 
-#Next step: which of the dependent variables are statistically different among clusters?
+#PERMANOVA on transformed driver data
+perm_drivers <- adonis(vegdist(LSTM_areas_noids)~Group_num, data=LSTM_areas, method="euclidean") #is this the right distance metric??
 
-#1: Multivariate normality - Anderson Darling test 
-#null: the data follows a normal distribution
-ad.test(LSTM_areas$AREA) #nope
-ad.test(LSTM_areas$lat) #nope
-ad.test(LSTM_areas$long) #nope
-ad.test(LSTM_areas$mean_precip) #nope
-
-#what test will allow us to identify which variables are sig different among clusters when data do not fall within a normal distribution???
-#was thinking LDA (Linear Discriminant Analysis), but that assumes normality
-#tried transforming data, but still doesn't meet normality assumptions...
-
-#pcnm???
+#NOTE: Lines 133 and 147 make this code crash - maybe the dataset is too large??
 
