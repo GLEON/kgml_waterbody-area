@@ -27,10 +27,14 @@ LSTM_areas <- LSTM_df[,c(1,2,5,8,9,60,61)]
 LSTM_areas <- LSTM_areas[!is.na(LSTM_areas$AREA),]
 driver_df <- driver_df[!is.na(driver_df$Lat),]
 
-#add precip (cm/yr), temp (C), and elev (m) to df
-LSTM_areas$mean_precip <- driver_df$pr_mean
-LSTM_areas$mean_temp <- driver_df$t_mean
-LSTM_areas$mean_elev <- driver_df$elev_mean
+#add precip (cm/yr), temp (C), and elev (m) to df and remove lakes that do not have precip/temp data (1643 waterbodies)
+LSTM_areas <- merge(LSTM_areas, driver_df, by = c('ID'))
+LSTM_areas <- LSTM_areas[,-c(8,9)]
+LSTM_areas <- na.omit(LSTM_areas)
+colnames(LSTM_areas) <- c("ID", "RESERVOIR", "AREA", "Cluster_50", "Group_num", "long", "lat", "mean_temp", "mean_precip", "mean_elev")
+
+remove(driver_df, LSTM_df)
+gc()
 
 ##PLAYING WITH SELECTIVE GROUP REMOVAL HERE!!!
 #LSTM_areas <- LSTM_areas[LSTM_areas$Group_num==2 | LSTM_areas$Group_num==3,]
@@ -38,10 +42,6 @@ LSTM_areas$mean_elev <- driver_df$elev_mean
 #select only numeric columns
 LSTM_areas_noids <- LSTM_areas[,c(3,6:10)]
 groups <- LSTM_areas[,c(3,5,6:10)]
-
-#remove NAs here - some of the waterbody lat/long do not match with the driver data lat.long so dropping those rows here (1643 waterbodies)
-LSTM_areas_noids <- LSTM_areas_noids[!is.na(LSTM_areas_noids$mean_precip),]
-groups <- groups[!is.na(groups$mean_precip),]
 
 #transform driver data (z-score normalization)
 LSTM_areas_noids$AREA <- (LSTM_areas_noids$AREA - mean(LSTM_areas_noids$AREA)) / sd(LSTM_areas_noids$AREA)
@@ -56,8 +56,8 @@ LSTM_areas_noids$mean_elev <- (LSTM_areas_noids$mean_elev - mean(LSTM_areas_noid
 pca <- princomp(LSTM_areas_noids, cor=TRUE, scores=TRUE)
 
 fviz_eig(pca)
-ggsave(file.path(lake_directory,"figures/pca/PCA_screeplot.jpg"),
-       units="in", width=5, height=4, dpi=300, device="jpeg")
+#ggsave(file.path(lake_directory,"figures/pca/PCA_screeplot.jpg"),
+#       units="in", width=5, height=4, dpi=300, device="jpeg")
 
 fviz_pca_ind(pca,
              col.ind = "cos2", # Color by the quality of representation
@@ -65,8 +65,8 @@ fviz_pca_ind(pca,
              geom = "point",
              axes = c(1,2)
 ) #low cos2 means that the waterbody is not perfectly represented by the pcs
-ggsave(file.path(lake_directory,"figures/pca/PCA_lakes_dim12.jpg"),
-       units="in", width=5, height=4, dpi=300, device="jpeg")
+#ggsave(file.path(lake_directory,"figures/pca/PCA_lakes_dim12.jpg"),
+#       units="in", width=5, height=4, dpi=300, device="jpeg")
 
 
 fviz_pca_var(pca,
@@ -75,8 +75,8 @@ fviz_pca_var(pca,
              geom = c("arrow","text"),
              axes = c(1,2)
 )
-ggsave(file.path(lake_directory,"figures/pca/PCA_drivers_dim12.jpg"),
-       units="in", width=5, height=4, dpi=300, device="jpeg")
+#ggsave(file.path(lake_directory,"figures/pca/PCA_drivers_dim12.jpg"),
+#       units="in", width=5, height=4, dpi=300, device="jpeg")
 
 #add groups to df
 LSTM_areas_noids$Group_num <- groups$Group_num
@@ -91,10 +91,11 @@ fviz_pca_biplot(pca,
                 habillage = as.factor(LSTM_areas_noids$Group_num),
                 legend.title = "KG clusters",
                 repel = TRUE,
+                #select.ind = list(contrib=2000),
                 axes = c(1,2)
 ) 
-ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
-                 units="in", width=5, height=4, dpi=300, device="jpeg")
+#ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim13_final.jpg"),
+#                 units="in", width=5, height=4, dpi=300, device="jpeg")
 
 fviz_pca_ind(pca,
              col.ind = as.factor(LSTM_areas_noids$Group_num), # color by groups
@@ -105,8 +106,8 @@ fviz_pca_ind(pca,
              axes = c(1,2)#,
             #select.ind = list(cos2 = 50000)
 )
-ggsave(file.path(lake_directory,"figures/pca/PCA_clusters_dim12.jpg"),
-       units="in", width=5, height=4, dpi=300, device="jpeg")
+#ggsave(file.path(lake_directory,"figures/pca/PCA_clusters_dim12.jpg"),
+#       units="in", width=5, height=4, dpi=300, device="jpeg")
 
 
 #-------------------------------------------------------------------------------#
@@ -126,15 +127,37 @@ p4 <- ggplot(LSTM_areas, aes(x = as.factor(Group_num), y = mean_precip, fill = G
 p5 <- ggplot(LSTM_areas, aes(x = as.factor(Group_num), y = mean_temp, fill = Group_num)) + geom_jitter(width = 0.2) + geom_boxplot(outlier.shape = NA) + theme(legend.position="none")
 p6 <- ggplot(LSTM_areas, aes(x = as.factor(Group_num), y = mean_elev, fill = Group_num)) + geom_jitter(width = 0.2) + geom_boxplot(outlier.shape = NA) + theme(legend.position="none")
 g <- grid.arrange(p1, p2, p3, p4, p5, p6, ncol=3)
-ggsave(file.path(lake_directory,"figures/pca/drivers_by_group.jpg"),
-       units="in", width=5, height=4, dpi=300, device="jpeg", g)
+#ggsave(file.path(lake_directory,"figures/pca/drivers_by_group.jpg"),
+#       units="in", width=5, height=4, dpi=300, device="jpeg", g)
 
+#-------------------------------------------------------------------------------#
+#randomly selecting 1500 waterbodies from each cluster and then running the permanova to address memory issues
+#so my justification for this is that since a permanova is a permutation test and the data is shuffled around randomly many many times, it should be okay to just subset the dataframe randomly and still be able to get a similar answer as you would with the full df
+#another thought is that we can randomly subset a few times and compare permanova outputs to be safe?
+permanova_df <- data.frame(pca$scores)
+permanova_groups <- data.frame(LSTM_areas$Group_num)
+colnames(permanova_groups) <- "Group_num"
+
+#combine pca scores with the kgml assigned group for each waterbody
+pca_groups <- cbind(permanova_df,permanova_groups)
+
+#randomly select 1500 from each cluster
+pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 1500)
+
+remove(p1,p2,p3,p4,p5,p6,g,groups, LSTM_areas_noids, pca, pca_groups,permanova_df,permanova_groups)
+gc()
+
+perm_pca <- adonis2(pca_groups_subset[,c(1:5)]~ Group_num, data=pca_groups_subset)
+#pca scores are the centroid multiplied by the rotation/loadings
+#p = 0.951; 0.137
+
+#-------------------------------------------------------------------------------#
+# BELOW HERE is the full dataset that requires too much memory to run (so will cause R to abort)
 #PERMANOVA using pca output
-perm_pca <- adonis(pca$scores~ Group_num, data=LSTM_areas)
+perm_pca <- adonis2(pca$scores~ Group_num, data=LSTM_areas)
 #pca scores are the centroid multiplied by the rotation/loadings
 
 #PERMANOVA on transformed driver data
-perm_drivers <- adonis(vegdist(LSTM_areas_noids)~Group_num, data=LSTM_areas, method="euclidean") #is this the right distance metric??
+perm_drivers <- adonis2(vegdist(LSTM_areas_noids)~Group_num, data=LSTM_areas, method="euclidean") #is this the right distance metric??
 
-#NOTE: Lines 133 and 147 make this code crash - maybe the dataset is too large??
 
