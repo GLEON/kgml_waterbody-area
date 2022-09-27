@@ -147,7 +147,7 @@ pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 15
 remove(p1,p2,p3,p4,p5,p6,g,groups, LSTM_areas_noids, pca, pca_groups,permanova_df,permanova_groups)
 gc()
 
-perm_pca <- adonis2(pca_groups_subset[,c(1:5)]~ Group_num, data=pca_groups_subset)
+perm_pca <- adonis2(pca_groups_subset[,c(1:5)]~ Group_num, data=pca_groups_subset, method="euclidean")
 #pca scores are the centroid multiplied by the rotation/loadings
 #p = 0.951; 0.137
 
