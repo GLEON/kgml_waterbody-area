@@ -142,7 +142,7 @@ colnames(permanova_groups) <- "Group_num"
 pca_groups <- cbind(permanova_df,permanova_groups)
 
 #randomly select 1500 from each cluster
-pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 1500)
+pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 2000)
 
 remove(p1,p2,p3,p4,p5,p6,g,groups, LSTM_areas_noids, pca, pca_groups,permanova_df,permanova_groups)
 gc()
