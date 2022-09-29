@@ -12,7 +12,11 @@ lake_directory <- here::here()
 
 # loading the vegan library in order to calculate distance matrices
 if(!require("pacman")) install.packages("pacman")
-pacman::p_load(vegan,ggplot2, gridExtra, MASS, nortest, factoextra, tidyverse)
+pacman::p_load(vegan,ggplot2, gridExtra, MASS, nortest, factoextra, tidyverse, remotes)
+
+#install pairwise adonis package for post hoc test
+install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+library(pairwiseAdonis)
 
 #read in LSTM output
 LSTM_df <- read.csv(file.path(lake_directory,"data/all_groups.csv")) %>% select(-c(X.1,X))
@@ -141,7 +145,7 @@ colnames(permanova_groups) <- "Group_num"
 #combine pca scores with the kgml assigned group for each waterbody
 pca_groups <- cbind(permanova_df,permanova_groups)
 
-#randomly select 1500 from each cluster
+#randomly select 2000 from each cluster
 pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 2000)
 
 remove(p1,p2,p3,p4,p5,p6,g,groups, LSTM_areas_noids, pca, pca_groups,permanova_df,permanova_groups)
@@ -149,7 +153,11 @@ gc()
 
 perm_pca <- adonis2(pca_groups_subset[,c(1:5)]~ Group_num, data=pca_groups_subset, method="euclidean")
 #pca scores are the centroid multiplied by the rotation/loadings
-#p = 0.951; 0.137
+#p = 0.001
+
+#post hoc test to determine which clusters are significantly different from each other
+pairwise.adonis(pca_groups_subset[,c(1:5)], pca_groups_subset$Group_num, sim.method = "euclidean")
+
 
 #-------------------------------------------------------------------------------#
 # BELOW HERE is the full dataset that requires too much memory to run (so will cause R to abort)
