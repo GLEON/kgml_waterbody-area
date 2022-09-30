@@ -135,7 +135,7 @@ g <- grid.arrange(p1, p2, p3, p4, p5, p6, ncol=3)
 #       units="in", width=5, height=4, dpi=300, device="jpeg", g)
 
 #-------------------------------------------------------------------------------#
-#randomly selecting 1500 waterbodies from each cluster and then running the permanova to address memory issues
+#randomly selecting 200 waterbodies from each cluster and then running the permanova to address memory issues
 #so my justification for this is that since a permanova is a permutation test and the data is shuffled around randomly many many times, it should be okay to just subset the dataframe randomly and still be able to get a similar answer as you would with the full df
 #another thought is that we can randomly subset a few times and compare permanova outputs to be safe?
 permanova_df <- data.frame(pca$scores)
@@ -148,6 +148,9 @@ pca_groups <- cbind(permanova_df,permanova_groups)
 #randomly select 2000 from each cluster
 pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 2000)
 
+#make sure group_num is a factor
+pca_groups$Group_num <- as.factor(pca_groups$Group_num)
+
 remove(p1,p2,p3,p4,p5,p6,g,groups, LSTM_areas_noids, pca, pca_groups,permanova_df,permanova_groups)
 gc()
 
@@ -156,16 +159,39 @@ perm_pca <- adonis2(pca_groups_subset[,c(1:5)]~ Group_num, data=pca_groups_subse
 #p = 0.001
 
 #post hoc test to determine which clusters are significantly different from each other
-pairwise.adonis(pca_groups_subset[,c(1:5)], pca_groups_subset$Group_num, sim.method = "euclidean")
+posthoc <- pairwise.adonis(pca_groups_subset[,c(1:5)], pca_groups_subset$Group_num, sim.method = "euclidean")
+# p-values are all the same (0.021) so trying some other tests
 
+mod <- betadisper(pca_groups_subset[,c(1:5)], pca_groups_subset$Group_num)
+permutest(mod)
 
-#-------------------------------------------------------------------------------#
-# BELOW HERE is the full dataset that requires too much memory to run (so will cause R to abort)
-#PERMANOVA using pca output
-perm_pca <- adonis2(pca$scores~ Group_num, data=LSTM_areas)
-#pca scores are the centroid multiplied by the rotation/loadings
+plot(mod)
+boxplot(mod)
 
+mod.HSD <- TukeyHSD(mod)
+mod.HSD
+plot(mod.HSD)
+
+#------------------------------------------------------------------------------------#
 #PERMANOVA on transformed driver data
-perm_drivers <- adonis2(vegdist(LSTM_areas_noids)~Group_num, data=LSTM_areas, method="euclidean") #is this the right distance metric??
+
+#randomly select 2000 from each cluster
+area_subset <-  LSTM_areas %>% group_by(Group_num) %>% slice_sample(n = 2000)
+
+#create distance matrix using only numeric columns
+groups_dist_subset <- vegdist(area_subset[], method = "euclidean") #specify these!
+
+#PERMANOVA
+adonis2(groups_dist_subset~Group_num, data=area_subset, method="euclidean")
+
+mod <- betadisper(groups_dist_subset, area_subset$Group_num)
+permutest(mod)
+
+plot(mod)
+boxplot(mod)
+
+mod.HSD <- TukeyHSD(mod)
+mod.HSD
+plot(mod.HSD)
 
 
