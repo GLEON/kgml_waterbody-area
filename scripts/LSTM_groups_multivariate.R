@@ -149,7 +149,7 @@ pca_groups <- cbind(permanova_df,permanova_groups)
 pca_groups_subset <-  pca_groups %>% group_by(Group_num) %>% slice_sample(n = 2000)
 
 #make sure group_num is a factor
-pca_groups$Group_num <- as.factor(pca_groups$Group_num)
+pca_groups_subset$Group_num <- as.factor(pca_groups_subset$Group_num)
 
 remove(p1,p2,p3,p4,p5,p6,g,groups, LSTM_areas_noids, pca, pca_groups,permanova_df,permanova_groups)
 gc()
@@ -162,7 +162,7 @@ perm_pca <- adonis2(pca_groups_subset[,c(1:5)]~ Group_num, data=pca_groups_subse
 posthoc <- pairwise.adonis(pca_groups_subset[,c(1:5)], pca_groups_subset$Group_num, sim.method = "euclidean")
 # p-values are all the same (0.021) so trying some other tests
 
-mod <- betadisper(pca_groups_subset[,c(1:5)], pca_groups_subset$Group_num)
+mod <- betadisper(vegdist(pca_groups_subset[,c(1:5)],method ="euclidean"), pca_groups_subset$Group_num)
 permutest(mod)
 
 plot(mod)
