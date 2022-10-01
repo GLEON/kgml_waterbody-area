@@ -168,12 +168,6 @@ permutest(mod)
 plot(mod)
 boxplot(mod)
 
-mod.HSD <- TukeyHSD(mod)
-mod.HSD
-plot(mod.HSD)
-# 
-
-
 #------------------------------------------------------------------------------------#
 #PERMANOVA on transformed driver data
 
