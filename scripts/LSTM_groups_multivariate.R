@@ -85,20 +85,23 @@ fviz_pca_var(pca,
 #add groups to df
 LSTM_areas_noids$Group_num <- groups$Group_num
 
+#manuscript color palatte
+ms_colors <- c("#56B4E9","#009E73","#F0E442","#0072B2","#E69F00","#D55E00","#999999")
+
 fviz_pca_biplot(pca,
                 addEllipses=TRUE, ellipse.level=0.95,
-                palette = c("lancet"), pointshape=19,
+                palette = ms_colors, pointshape=19,
                 geom.ind = "none",
                 mean.point = TRUE,
-                geom.var = c("arrow","text"),
                 col.var = "black",
-                habillage = as.factor(LSTM_areas_noids$Group_num),
-                legend.title = "KG clusters",
+                legend.title = "Clusters",
+                title = "",
                 repel = TRUE,
                 #select.ind = list(contrib=2000),
-                axes = c(1,2)
+                axes = c(1,2),
+                col.ind = as.factor(LSTM_areas_noids$Group_num)
 ) 
-#ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim13_final.jpg"),
+#ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
 #                 units="in", width=5, height=4, dpi=300, device="jpeg")
 
 fviz_pca_ind(pca,
