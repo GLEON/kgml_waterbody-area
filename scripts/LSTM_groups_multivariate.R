@@ -37,6 +37,11 @@ LSTM_areas <- LSTM_areas[,-c(8,9)]
 LSTM_areas <- na.omit(LSTM_areas)
 colnames(LSTM_areas) <- c("ID", "RESERVOIR", "AREA", "Cluster_50", "Group_num", "long", "lat", "mean_temp", "mean_precip", "mean_elev")
 
+#rename column names
+names(LSTM_areas) <- c("ID", "Reservoir","Area","Cluster_50","Group_num",
+                       "Longitude","Latitude","Mean Temperature",
+                       "Mean Precipitation","Mean Elevation")
+
 remove(driver_df, LSTM_df)
 gc()
 
@@ -48,12 +53,12 @@ LSTM_areas_noids <- LSTM_areas[,c(3,6:10)]
 groups <- LSTM_areas[,c(3,5,6:10)]
 
 #transform driver data (z-score normalization)
-LSTM_areas_noids$AREA <- (LSTM_areas_noids$AREA - mean(LSTM_areas_noids$AREA)) / sd(LSTM_areas_noids$AREA)
-LSTM_areas_noids$long <- (LSTM_areas_noids$long - mean(LSTM_areas_noids$long)) / sd(LSTM_areas_noids$long)
-LSTM_areas_noids$lat <- (LSTM_areas_noids$lat - mean(LSTM_areas_noids$lat)) / sd(LSTM_areas_noids$lat)
-LSTM_areas_noids$mean_precip <- (LSTM_areas_noids$mean_precip - mean(LSTM_areas_noids$mean_precip)) / sd(LSTM_areas_noids$mean_precip)
-LSTM_areas_noids$mean_temp <- (LSTM_areas_noids$mean_temp - mean(LSTM_areas_noids$mean_temp)) / sd(LSTM_areas_noids$mean_temp)
-LSTM_areas_noids$mean_elev <- (LSTM_areas_noids$mean_elev - mean(LSTM_areas_noids$mean_elev)) / sd(LSTM_areas_noids$mean_elev)
+LSTM_areas_noids$Area <- (LSTM_areas_noids$Area - mean(LSTM_areas_noids$Area)) / sd(LSTM_areas_noids$Area)
+LSTM_areas_noids$Longitude <- (LSTM_areas_noids$Longitude - mean(LSTM_areas_noids$Longitude)) / sd(LSTM_areas_noids$Longitude)
+LSTM_areas_noids$Latitude <- (LSTM_areas_noids$Latitude - mean(LSTM_areas_noids$Latitude)) / sd(LSTM_areas_noids$Latitude)
+LSTM_areas_noids$`Mean Precipitation` <- (LSTM_areas_noids$`Mean Precipitation` - mean(LSTM_areas_noids$`Mean Precipitation`)) / sd(LSTM_areas_noids$`Mean Precipitation`)
+LSTM_areas_noids$`Mean Temperature` <- (LSTM_areas_noids$`Mean Temperature` - mean(LSTM_areas_noids$`Mean Temperature`)) / sd(LSTM_areas_noids$`Mean Temperature`)
+LSTM_areas_noids$`Mean Elevation` <- (LSTM_areas_noids$`Mean Elevation` - mean(LSTM_areas_noids$`Mean Elevation`)) / sd(LSTM_areas_noids$`Mean Elevation`)
 
 #now pca - spectral decomposition that examines the covariances/correlations between variables
 #we have more samples/lakes than features/drivers so princomp is preferred over prcomp
@@ -94,15 +99,28 @@ fviz_pca_biplot(pca,
                 geom.ind = "none",
                 mean.point = TRUE,
                 col.var = "black",
-                legend.title = "Clusters",
+                legend.title = "",
                 title = "",
                 repel = TRUE,
                 #select.ind = list(contrib=2000),
-                axes = c(1,2),
-                col.ind = as.factor(LSTM_areas_noids$Group_num)
-) 
-#ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
-#                 units="in", width=5, height=4, dpi=300, device="jpeg")
+                axes = c(3,4),
+                col.ind = as.factor(LSTM_areas_noids$Group_num)) +
+    labs(x = "PC3", y = "PC4") + guides(fill=FALSE,
+    color=guide_legend(ncol=4)) +
+  scale_color_manual(name = "", labels = c(
+    "Cluster 1: No\n\ change over time",
+    "Cluster 2: Substantial\n\ increase and then maintain",
+    "Cluster 3: Steady\n\ increase over time", 
+    "Cluster 4: Steady\n\ decrease over time",
+    "Cluster 5:\n\ Peaks", "Cluster 6:\n\ Troughs",
+    "Cluster 7:\n\ Outliers"), values= ms_colors) +
+  theme(legend.position = "bottom", legend.direction = "horizontal", 
+        legend.key.size = unit(0.7,"cm"),
+        plot.margin = unit(c(-0.9,0,0,0), "cm"),
+        legend.text=element_text(size=8),
+        legend.margin=margin(t = 0, l=-1, unit='cm'))
+ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim34_final.jpg"),
+                 units="in", width=5, height=4, dpi=300, device="jpeg")
 
 fviz_pca_ind(pca,
              col.ind = as.factor(LSTM_areas_noids$Group_num), # color by groups
