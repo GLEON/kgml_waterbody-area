@@ -39,7 +39,7 @@ colnames(LSTM_areas) <- c("ID", "RESERVOIR", "AREA", "Cluster_50", "Group_num", 
 
 #rename column names
 names(LSTM_areas) <- c("ID", "Reservoir","Area","Cluster_50","Group_num",
-                       "Longitude","Latitude","Mean Temperature",
+                       "Longitude","Latitude","Mean Air Temperature",
                        "Mean Precipitation","Mean Elevation")
 
 remove(driver_df, LSTM_df)
@@ -57,7 +57,7 @@ LSTM_areas_noids$Area <- (LSTM_areas_noids$Area - mean(LSTM_areas_noids$Area)) /
 LSTM_areas_noids$Longitude <- (LSTM_areas_noids$Longitude - mean(LSTM_areas_noids$Longitude)) / sd(LSTM_areas_noids$Longitude)
 LSTM_areas_noids$Latitude <- (LSTM_areas_noids$Latitude - mean(LSTM_areas_noids$Latitude)) / sd(LSTM_areas_noids$Latitude)
 LSTM_areas_noids$`Mean Precipitation` <- (LSTM_areas_noids$`Mean Precipitation` - mean(LSTM_areas_noids$`Mean Precipitation`)) / sd(LSTM_areas_noids$`Mean Precipitation`)
-LSTM_areas_noids$`Mean Temperature` <- (LSTM_areas_noids$`Mean Temperature` - mean(LSTM_areas_noids$`Mean Temperature`)) / sd(LSTM_areas_noids$`Mean Temperature`)
+LSTM_areas_noids$`Mean Air Temperature` <- (LSTM_areas_noids$`Mean Air Temperature` - mean(LSTM_areas_noids$`Mean Air Temperature`)) / sd(LSTM_areas_noids$`Mean Air Temperature`)
 LSTM_areas_noids$`Mean Elevation` <- (LSTM_areas_noids$`Mean Elevation` - mean(LSTM_areas_noids$`Mean Elevation`)) / sd(LSTM_areas_noids$`Mean Elevation`)
 
 #now pca - spectral decomposition that examines the covariances/correlations between variables
@@ -116,7 +116,7 @@ fviz_pca_biplot(pca,
     "Cluster 7:\n\ Outliers"), values= ms_colors) +
   theme(legend.position = "bottom", legend.direction = "horizontal", 
         legend.key.size = unit(0.7,"cm"),
-        plot.margin = unit(c(-0.9,0,0,0), "cm"),
+        plot.margin = unit(c(-0.5,0,0,0), "cm"),
         legend.text=element_text(size=8),
         legend.margin=margin(t = 0, l=-1, unit='cm'))
 ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim34_final.jpg"),
