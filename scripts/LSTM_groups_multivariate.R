@@ -103,23 +103,23 @@ fviz_pca_biplot(pca,
                 title = "",
                 repel = TRUE,
                 #select.ind = list(contrib=2000),
-                axes = c(3,4),
+                axes = c(2,3),
                 col.ind = as.factor(LSTM_areas_noids$Group_num)) +
-    labs(x = "PC3", y = "PC4") + guides(fill=FALSE,
+    labs(x = "PC2", y = "PC3") + guides(fill=FALSE,
     color=guide_legend(ncol=4)) +
   scale_color_manual(name = "", labels = c(
-    "Cluster 1: No\n\ change over time",
-    "Cluster 2: Substantial\n\ increase and then maintain",
-    "Cluster 3: Steady\n\ increase over time", 
-    "Cluster 4: Steady\n\ decrease over time",
-    "Cluster 5:\n\ Peaks", "Cluster 6:\n\ Troughs",
-    "Cluster 7:\n\ Outliers"), values= ms_colors) +
+    "Cluster 1: No change over time",
+    "Cluster 2: Substantial increase\n\ and then maintain",
+    "Cluster 3: Steady increase\n\ over time", 
+    "Cluster 4: Steady decrease\n\ over time",
+    "Cluster 5: Peaks", "Cluster 6: Troughs",
+    "Cluster 7: Outliers"), values= ms_colors) +
   theme(legend.position = "bottom", legend.direction = "horizontal", 
-        legend.key.size = unit(0.7,"cm"),
+        legend.key.size = unit(0.5,"cm"),
         plot.margin = unit(c(-0.5,0,0,0), "cm"),
-        legend.text=element_text(size=8),
+        legend.text=element_text(size=6),
         legend.margin=margin(t = 0, l=-1, unit='cm'))
-ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim34_final.jpg"),
+ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim23_final.jpg"),
                  units="in", width=5, height=4, dpi=300, device="jpeg")
 
 fviz_pca_ind(pca,
