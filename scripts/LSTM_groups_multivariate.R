@@ -142,6 +142,6 @@ tukey_letters <- data.frame(multcompLetters(tukey_p)['Letters'])
 #1a; 2a; 3bc; 4abc; 5b; 6b; 7ac 
 
 #export table with p-values
-tukey_table <- data.frame("clusters" = as.character(rownames(tukey_table)) ,"p-value"= mod.HSD[[1]][,4])
+tukey_table <- data.frame("clusters" = as.character(rownames(tukey_letters)) ,"p-value"= mod.HSD[[1]][,4])
 
 write.csv(tukey_table, file.path(lake_directory,"data/tukey_p-values.csv"), row.names = FALSE)
