@@ -42,22 +42,3 @@ any(unlist(lapply(test, function(x) length(x) > 0)))
 
 mapview(mead_buffer[1,]) + mapview(mead[1,]) + mapview(dt_sf)
 # mapview(dt_mead[1,], color = "red")
-
-
-
-
-# ----
-# dt         <- read_sf("data/ReaLSAT.shp")
-# test_shp <- dplyr::filter(dt, ID == test_pnt$ID)
-# test_pnt$AREA == test_shp$AREA
-
-# test_csv <- data.frame(t(
-#     read.csv(
-#     get_ts_file_path(test_pnt$ID, get_ts_file_table()),
-#     header = FALSE)
-#   ), stringsAsFactors = FALSE)
-# identical(
-#   dplyr::pull(dplyr::mutate(test_csv,
-#                 X3 = dplyr::na_if(X3, -1))),
-#   test_ts$area
-#   )
