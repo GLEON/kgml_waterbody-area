@@ -1,7 +1,9 @@
 source("scripts/99_packages.R")
 source("scripts/99_utils.R")
 
-# compare shapefile areas with time-series area
+library(mapview)
+
+# compare shapefile areas with time-series area ----
 dt_area    <- readRDS("data/area_timeseries.rds")
 dt_sf      <- st_read("data/dt_us_pnt.gpkg")
 
@@ -15,18 +17,28 @@ landsat_pixels_to_area(test_pnt$AREA)
 landsat_pixels_to_area(range(test_ts$area, na.rm = TRUE))
 # 25.38 - 128.34 ha
 
-# ----
-# dt         <- read_sf("data/ReaLSAT.shp")
-# test_shp <- dplyr::filter(dt, ID == test_pnt$ID)
-# test_pnt$AREA == test_shp$AREA
+# compare ReaLSAT records with those in the Hydroweb database ----
 
-# test_csv <- data.frame(t(
-#     read.csv(
-#     get_ts_file_path(test_pnt$ID, get_ts_file_table()),
-#     header = FALSE)
-#   ), stringsAsFactors = FALSE)
-# identical(
-#   dplyr::pull(dplyr::mutate(test_csv,
-#                 X3 = dplyr::na_if(X3, -1))),
-#   test_ts$area
-#   )
+mead_raw    <- wikilake::lake_wiki(c("Honey Lake"))
+mead        <- sf::st_as_sf(
+  mead_raw, coords = c("Lon", "Lat"), crs = 4326) %>%
+  arrange(Name)
+mead_buffer <- st_buffer(mead, 0.1)
+
+mapview(mead_buffer[1,]) + mapview(mead[1,])# + mapview(dt_sf)
+
+mapview(dplyr::filter(dt_sf, ID == 698614))
+
+test <- st_intersects(dt_sf, mead_buffer)
+any(unlist(lapply(test, function(x) length(x) > 0)))
+
+
+(
+  dt_mead <- sf::st_join(dt_sf, mead_buffer) %>%
+    dplyr::filter(!is.na(Name)) %>%
+    arrange(Name)
+)
+
+
+mapview(mead_buffer[1,]) + mapview(mead[1,]) + mapview(dt_sf)
+# mapview(dt_mead[1,], color = "red")

@@ -45,7 +45,7 @@ area_count <- area_timeseries %>% group_by(id,year) %>% summarise(max_count=max(
 
 # Plotting a histogram of 'number of months with data gaps' by 'number of lakes', faceted by year (excluding 0 counts and 2015)
 lake_count <- length(unique(area_all_count$id))
-area_count_histo <- area_all_count %>% 
+area_count_histo <- area_count %>% 
   #filter(max_count > 0) %>% 
   filter(year != '2015')
 
@@ -64,7 +64,7 @@ ggplot(data = area_count_histo, aes(x = max_count)) +
 dev.off()
 
 #Plotting a histogram showing number of lakes with no gaps by year
-area_count_zero <- area_all_count %>% 
+area_count_zero <- area_count %>% 
   filter(max_count == 0)
 
 png("Histogram_data_quality2.png", units="in", width=9, height=6, res=300)
@@ -75,3 +75,36 @@ ggplot(data = area_count_zero, aes(year)) +
   theme_bw() + theme(axis.text = element_text(size = 11),
                      axis.title = element_text(size = 12))
 dev.off()
+
+
+
+area_count <- area_count[1:2243,] 
+area_count$id <- as.character(area_count$id)
+
+#  ploting a heatmap of data availability
+textcol <- "grey40"
+
+# png("./figures/Data_availability_heatmap.png", units="in", width=11, height=6, res=300)
+ ggplot(area_count,aes(x=year,y=id,fill=max_count))+
+   geom_tile(colour="white",size=0.2,height=0.6)+
+   guides(fill=guide_legend(title="# missing\nmonths"))+
+   labs(x="",y="",title="")+
+   scale_fill_viridis_c()+
+   scale_y_discrete(expand=c(0,0))+
+   theme_grey(base_size=10)+ labs(y="ID",x=element_blank(), colour = "")+theme_bw() +
+   theme(legend.position="right",legend.direction="vertical",
+         legend.title=element_text(colour=textcol),
+         legend.margin=margin(grid::unit(0,"cm")),
+         legend.text=element_text(colour=textcol,size=10,face="bold"),
+         legend.key.height=grid::unit(1,"cm"),
+         legend.key.width=grid::unit(0.9,"cm"),
+         text=element_text(size=16),
+         axis.text.x=element_text(size=16,colour=textcol),
+         axis.text.y=element_blank(),
+         axis.ticks=element_line(size=0.4),
+         plot.background=element_blank(),
+         panel.border=element_blank(),
+         plot.margin=margin(0.7,0.4,0.1,0.2,"cm"),
+         plot.title=element_text(colour=textcol,hjust=0,size=14,face="bold"))
+#dev.off()   
+

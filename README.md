@@ -1,9 +1,11 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+## Using knowledge-guided machine learning to assess patterns of areal change in waterbodies across the contiguous US
 
-# realsat
+[![Paper DOI](https://img.shields.io/badge/Paper-DOI-blue.svg)](https://doi.org) [![Code DOI](https://img.shields.io/badge/Code-DOI-blue.svg)](https://doi.org)
 
-## Vector layer fields
+### Data
+
+### Vector layer fields
 
 ID: the unique ID for water body. ID values are used as names of
 shapefiles that contain monthly shapes.
@@ -40,7 +42,7 @@ CONTINENT: between 0 and 8 representing different continents -
 
 geometry: reference shape of the reservoir
 
-## Monthly timeseries fields
+### Monthly timeseries fields
 
 Column 1: fill; Percentage of pixels (ranges between 0 and 100) filled
 (by algorithms used to create ReaLSAT) that had missing label in the
@@ -55,7 +57,7 @@ Column 3: area; in units of sq km
 
 -----
 
-## Links
+### Links
 
 <http://umnlcc.cs.umn.edu/realsat/>
 

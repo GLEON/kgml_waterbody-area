@@ -46,7 +46,7 @@ data_mk$ID <- as.numeric(data_mk$ID)
 # merge both dataframes for the plot
 data_mk <- merge(data_mk,dt_us_pnt,by="ID",all.x=TRUE, all.y=TRUE)
 
-#  Loading joe's function
+#  Loading jem's function
 usa_sf <- function(crs){
   res <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE))
   state_key <- data.frame(state = datasets::state.abb,

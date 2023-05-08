@@ -103,7 +103,7 @@ colnames(data_aux)[2:3] <- c("sd","mean_area")
 # merge both dataframes for the plot
 data <- merge(dt_us_pnt,data_aux,by="ID")
 
-#  Loading joe's function
+#  Loading jem's function
 usa_sf <- function(crs){
   res <- sf::st_as_sf(maps::map("state", plot = FALSE, fill = TRUE))
   state_key <- data.frame(state = datasets::state.abb,

@@ -3,3 +3,10 @@
 .RData
 .Ruserdata
 data
+test.py
+.envrc
+.vscode/
+.DS_Store
+notebooks/*
+figures/*
+ReaLSAT-*
