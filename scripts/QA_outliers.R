@@ -3,6 +3,7 @@
 rm(list = ls())
 
 library(data.table)
+library(tidyverse)
 
 source("scripts/99_packages.R")
 
@@ -12,11 +13,10 @@ dt_us_pnt <- sf::st_read("data/dt_us_pnt.gpkg")
 
 # ephemeral lake id =="714607"
 # regular lake id == 458167
-df <- area_timeseries %>% filter (id=="458167")
-
+df <- area_timeseries %>% filter(id=="458167")
 
 #  selecting date and area only
-df <- df %>% select(date,area)
+df <- df %>% dplyr::select(date,area)
 
 #  setting all -1 to NA
 df[df == -1] <- NA
@@ -69,10 +69,6 @@ df <- df %>% mutate(area_sd = remove_outliers_sd(df$area),area_mad = remove_outl
 
 plot(df$date,df$area)
 
-
-#  ephemeral lake
-dg 
-plot(dg$date,dg$area)
 #  plot
 ggplot(melt(df,id.vars="date"), aes(x = date, y=value,col=variable)) + 
   geom_point()

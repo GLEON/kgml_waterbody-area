@@ -1,5 +1,4 @@
 rm(list = ls())
-# setwd("C:/Users/Maartje/OneDrive - McGill University/Lake_Expedition_2020/Realsat/Lake_expedition")
 
 library(zoo)
 library(tidyverse)
@@ -9,6 +8,7 @@ library(hydroTSM)
 library(data.table)
 library(modifiedmk)
 library(sf)
+library(here)
 
 #  reading files ---- choose all lakes ('area_timeseries_all') or lakes > 80ha ('area_timeseries')
 area_timeseries_all <- readRDS("data/area_timeseries_all.rds")
@@ -17,21 +17,6 @@ area_timeseries_all <- readRDS("data/area_timeseries_all.rds")
 #  setting all NA to -1
 # area_timeseries[is.na(area_timeseries)] <- -1
 area_timeseries_all[is.na(area_timeseries_all)] <- -1
-
-
-#  Counting number of months available per year per lake/reservoir ----
-# area_timeseries$count <- ave(area_timeseries$area == "-1", area_timeseries$id,area_timeseries$year, FUN=cumsum)
-
-# do not execute this xxxx
-# area_timeseries_all$count <- ave(area_timeseries_all$area == "-1", area_timeseries_all$id,area_timeseries_all$year, FUN=cumsum)
-
-#  Group by id and year and get the max count per year
-# xxxx
-# area_count <- area_timeseries_all %>% 
-#   group_by(id,year) %>% 
-#   summarise(max_count=max(count)) %>% 
-#   mutate(perc_missing = max_count/12 * 100)
-#area_all_count <- area_timeseries_all %>% group_by(id,year) %>% summarise(max_count=max(count))
 
 # Get percentage of missing data per lake
 area_timeseries_all <- mutate(area_timeseries_all, missing = (area == -1))
@@ -78,21 +63,6 @@ data_rle <- na.omit(data_rle)
 data_rle_filter <- filter(data_rle,min != "Inf",max!= "-Inf" )
 # some lakes don't have any missing gaps e.g. id=574514
 #  around 15750 don't have any missing data at all!
-
-
-# for (i in lake_ids) {
-#   df <- filter(area_timeseries_all, id == i)
-#   RLE <- rle(df$missing)
-#   df_RLE <- filter(data.frame(length = RLE$lengths, values = RLE$values), values == 'TRUE')
-#   RLE_summary[(nrow(RLE_summary) + 1), 1] <- i
-#   RLE_summary[(nrow(RLE_summary)), 2] <- min(df_RLE$length)
-#   RLE_summary[(nrow(RLE_summary)), 3] <- max(df_RLE$length)
-#   RLE_summary[(nrow(RLE_summary)), 4] <- length(df_RLE$length)
-# }
-# 
-# RLE_summary <- na.omit(RLE_summary)
-# RLE_summary <- merge(RLE_summary, perc_missing)
-# write.csv(RLE_summary, "RLE_summary.csv")
 
 #  all years pre 2000 --------------- ------------------------------------------
 

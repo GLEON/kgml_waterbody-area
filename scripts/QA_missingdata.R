@@ -1,6 +1,5 @@
 # This script is to analyze realsat data 
 rm(list = ls())
-# setwd("C:/Users/Maartje/OneDrive - McGill University/Lake_Expedition_2020/Realsat/Lake_expedition")
 
 library(zoo)
 library(tidyverse)
@@ -10,12 +9,11 @@ library(hydroTSM)
 library(data.table)
 library(modifiedmk)
 library(sf)
+library(here)
 
 #  reading files ---- choose all lakes ('area_timeseries_all') or lakes > 80ha ('area_timeseries')
-
 area_timeseries <- readRDS("data/area_timeseries_all.rds")
-dt_us_pnt <- sf::st_read("data/dt_us_pnt_all.gpkg")
-
+dt_us_pnt <- sf::st_read("data/dt_us_pnt.gpkg")
 
 #  setting all -1 to NA
 area_timeseries[is.na(area_timeseries)] <- -1
@@ -29,7 +27,6 @@ area_timeseries <- mutate(area_timeseries,season=case_when(
   month %in%  3:5  ~ "Spring",
   month %in% 6:8 ~ "Summer"))
 
-
 #  Counting number of months available per season per year, per lake/reservoir ----
 area_timeseries$count <- ave(area_timeseries$area == "-1",area_timeseries$year, area_timeseries$id,area_timeseries$season, FUN=cumsum)
 
@@ -38,7 +35,7 @@ area_count <- area_timeseries %>% group_by(id,year,season) %>% summarise(max_cou
 
 data <- filter(area_count,season=="Winter")
 
-png("figures/Histogram_data_quality_winter_all_lakes.png", units="in", width=11, height=8, res=300)
+png("figures/Histogram_data_quality_winter.png", units="in", width=11, height=8, res=300)
 ggplot(data, aes(x = max_count)) +
   geom_histogram(position = "dodge", binwidth = 1, col = "black") +
   facet_wrap(vars(year)) +
