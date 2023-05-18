@@ -2,7 +2,9 @@
 
 rm(list = ls())
 Sys.setenv(TZ='UTC')
-source("scripts/99_packages.R")
+
+if (!require("pacman"))install.packages("pacman")
+pacman::p_load(rgdal, sf)
 
 #  Get density plot by latitude
 
