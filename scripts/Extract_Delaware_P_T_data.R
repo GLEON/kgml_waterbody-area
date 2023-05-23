@@ -155,4 +155,4 @@ data_elevation <- data_elevation %>%
 
 data_final <- left_join(data_pr_temp,data_elevation,by=c('ID','Lon','Lat'))
 
-write.csv(data_final,'pr_temp_elev_us_1985_2015.csv')
+write.csv(data_final,'data/pr_temp_elev_us_1985_2015.csv')
