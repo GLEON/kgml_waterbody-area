@@ -1,0 +1,71 @@
+{
+    "license": "other-open",
+    "title": "Using knowledge-guided machine learning to assess patterns of areal change in waterbodies across the contiguous US",
+    "upload_type": "publication",
+    "creators": [
+        {
+            "orcid": "0000-0002-3762-6045",
+            "affiliation": "Virginia Tech",
+            "name": "Heather L. Wander"
+        },
+        {
+            "orcid": "0000-0003-4234-6678",
+            "affiliation": "University of California Davis",
+            "name": "Mary Jade Farruggia"
+        },
+        {
+            "orcid": "0000-0002-9665-672X",
+            "affiliation": "Dundalk Institute of Technology",
+            "name": "R. Sofia La Fuente"
+        },
+        {
+            "orcid": "0000-0003-1062-4864",
+            "affiliation": "McGill University",
+            "name": "Maartje C. Korver"
+        },
+        {
+            "orcid": "0000-0002-1295-6670",
+            "affiliation": "The University of Vermont",
+            "name": "Rosaura J. Chapina"
+        },
+        {
+            "orcid": "0000-0003-0415-8385",
+            "affiliation": "Rensselaer Polytechnic Institute",
+            "name": "Jenna Robinson"
+        },
+        {
+            "orcid": "0000-0002-3353-4880",
+            "affiliation": "City University of New York",
+            "name": "Abdou R. Bah"
+        },
+        {
+            "orcid": "0000-0001-6681-4371",
+            "affiliation": "Northern Region Water Board",
+            "name": "Elias Munthali"
+        },
+        {
+            "affiliation": "University of Minnesota",
+            "name": "Rahul Ghosh"
+        },
+        {
+            "orcid": "0000-0002-5924-2464",
+            "affiliation": "Los Alamos National Laboratory",
+            "name": "Jemma Stachelek"
+        },
+        {
+            "affiliation": "University of Minnesota",
+            "name": "Ankush Khandelwal"
+        },
+        {
+            "orcid": "0000-0001-8533-6061",
+            "affiliation": "University of Wisconsin - Madison",
+            "name": "Paul C. Hanson"
+        },
+        {
+            "orcid": "0000-0002-3575-6508",
+            "affiliation": "Cary Institute of Ecosystem Studies",
+            "name": "Kathleen C. Weathers"
+        }
+    ],
+    "access_right": "open"
+}
