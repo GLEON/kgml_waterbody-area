@@ -38,7 +38,7 @@ authors:
   - family-names: "Weathers"
     given-names: "Kathleen C."
     orcid: "https://orcid.org/0000-0002-3575-6508"
-title: "Using knowledge-guided machine learning to assess patterns of areal change in waterbodies across the contiguous US"
+title: "Using knowledge-guided machine learning to assess patterns of areal change in waterbodies across the contiguous US: Code"
 version: 0.0.2
 date-released: 2023-05-30
 url: "https://github.com/GLEON/kgml_waterbody-area"

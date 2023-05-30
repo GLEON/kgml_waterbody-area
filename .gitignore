@@ -9,3 +9,5 @@ test.py
 .DS_Store
 figures/*
 ReaLSAT-*
+*.docx
+*.pdf
