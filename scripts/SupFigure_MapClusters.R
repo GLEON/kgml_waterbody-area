@@ -3,7 +3,9 @@
 
 rm(list = ls())
 Sys.setenv(TZ='UTC')
-source("scripts/99_packages.R")
+
+if (!require("pacman"))install.packages("pacman")
+pacman::p_load(tidyverse, sf, rgdal)
 
 # Read data
 data <- read.csv('data/all_groups.csv')

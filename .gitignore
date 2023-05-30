@@ -2,11 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-data
+data/*
 test.py
 .envrc
 .vscode/
 .DS_Store
-notebooks/*
 figures/*
 ReaLSAT-*
