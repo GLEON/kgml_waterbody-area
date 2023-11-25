@@ -14,10 +14,10 @@ pacman::p_load(vegan,ggplot2, gridExtra, MASS, nortest, factoextra,
 library(pairwiseAdonis)
 
 #read in LSTM output
-LSTM_df <- read.csv(file.path(lake_directory,"data/all_groups.csv")) %>% select(-c(X.1,X))
+LSTM_df <- read.csv(file.path(lake_directory,"data/Code_data/all_groups.csv")) %>% select(-c(X.1,X))
 
 #read in driver data
-driver_df <- read.csv(file.path(lake_directory,"data/pr_temp_elev_us_1985_2015.csv")) %>% select(-c(X))
+driver_df <- read.csv(file.path(lake_directory,"data/Code_data/pr_temp_elev_us_1985_2015.csv")) %>% select(-c(X))
 
 #subset df so can manipulate relevant columns for PCA
 LSTM_areas <- LSTM_df[,c(1,2,5,8,9,60,61)]
@@ -77,24 +77,24 @@ fviz_pca_biplot(pca,
                 title = "",
                 repel = TRUE,
                 #select.ind = list(contrib=2000),
-                axes = c(1,2),
+                axes = c(3,4),
                 col.ind = as.factor(LSTM_areas_noids$Group_num)) +
-    labs(x = "PC1", y = "PC2") + guides(fill=FALSE,
+    labs(x = "PC3", y = "PC4") + guides(fill=FALSE,
     color=guide_legend(ncol=4)) +
   scale_color_manual(name = "", labels = c(
-    "Cluster 1: No change over time",
-    "Cluster 2: Substantial increase\n\ and then maintain",
-    "Cluster 3: Steady increase\n\ over time", 
-    "Cluster 4: Steady decrease\n\ over time",
-    "Cluster 5: Peaks", "Cluster 6: Troughs",
-    "Cluster 7: Outliers"), values= ms_colors) +
+    "Group 1: No change over time",
+    "Group 2: Substantial increase\n\ and then maintain",
+    "Group 3: Steady increase\n\ over time", 
+    "Group 4: Steady decrease\n\ over time",
+    "Group 5: Peaks", "Cluster 6: Troughs",
+    "Group 7: Outliers"), values= ms_colors) +
   theme(legend.position = "bottom", legend.direction = "horizontal", 
         legend.key.size = unit(0.5,"cm"),
         plot.margin = unit(c(-0.5,0,0,0), "cm"),
         legend.text=element_text(size=6),
         legend.margin=margin(t = 0, l=-1, unit='cm'))
-#ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim12_final.jpg"),
-#                 units="in", width=5, height=4, dpi=300, device="jpeg")
+#ggsave(file.path(lake_directory,"figures/pca/PCA_biplot_dim34_final.jpg"),
+#                units="in", width=5, height=4, dpi=300, device="jpeg")
 
 #-------------------------------------------------------------------------------#
 # PERMANOVA (nonparmaetric test; permutational multivariate anova)
@@ -144,4 +144,4 @@ tukey_letters <- data.frame(multcompLetters(tukey_p)['Letters'])
 #export table with p-values
 tukey_table <- data.frame("clusters" = as.character(rownames(tukey_letters)) ,"p-value"= mod.HSD[[1]][,4])
 
-write.csv(tukey_table, file.path(lake_directory,"data/tukey_p-values.csv"), row.names = FALSE)
+write.csv(tukey_table, file.path(lake_directory,"data/Results/tukey_p-values.csv"), row.names = FALSE)
