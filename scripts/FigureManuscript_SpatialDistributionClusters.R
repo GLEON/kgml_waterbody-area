@@ -4,22 +4,22 @@ rm(list = ls())
 Sys.setenv(TZ='UTC')
 
 if (!require("pacman"))install.packages("pacman")
-pacman::p_load(rgdal, sf)
+pacman::p_load(rgdal, sf, tidyverse)
 
 #  Get density plot by latitude
 
-data <- read.csv('data/all_groups.csv')
+data <- read.csv('data/Code_data/all_groups.csv')
 
 data <- data %>% 
   mutate(cluster = case_when(
     
-    Group_num %in%  1 ~ "Cluster 1: No change over time",
-    Group_num %in%  2 ~ "Cluster 2: Substantial increase and then maintain",
-    Group_num %in%  3 ~ "Cluster 3: Steady increase over time",
-    Group_num %in%  4 ~ "Cluster 4: Steady decrease over time",
-    Group_num %in%  5 ~ "Cluster 5: Peaks",
-    Group_num %in%  6 ~ "Cluster 6: Troughs",
-    Group_num %in%  7 ~ "Cluster 7: Outliers"
+    Group_num %in%  1 ~ "Group 1: No change over time",
+    Group_num %in%  2 ~ "Group 2: Substantial increase and then maintain",
+    Group_num %in%  3 ~ "Group 3: Steady increase over time",
+    Group_num %in%  4 ~ "Group 4: Steady decrease over time",
+    Group_num %in%  5 ~ "Group 5: Peaks",
+    Group_num %in%  6 ~ "Group 6: Troughs",
+    Group_num %in%  7 ~ "Group 7: Outliers"
     ))
 
 
@@ -53,7 +53,7 @@ p2 <- ggplot(data, mapping = aes(x = lat, color = cluster))+
   theme_figure()
 
 #  read shape file for map
-shp <- readOGR(dsn = file.path(paste0(getwd(),'/data/s_22mr22.shp')), stringsAsFactors = F)
+shp <- readOGR(dsn = file.path(paste0(getwd(),'/data/Code_data/s_22mr22.shp')), stringsAsFactors = F)
 
 data <- na.omit(data)
 

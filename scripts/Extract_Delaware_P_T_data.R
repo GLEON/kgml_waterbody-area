@@ -22,14 +22,14 @@ library(data.table)
 
 
 #  Read realsat data
-lakes_realsat <- read.csv('data/all_groups.csv') 
+lakes_realsat <- read.csv('data/Code_data/all_groups.csv') 
 
 lakes_realsat <- lakes_realsat %>%
   select(ID,long,lat) %>%
   rename(Lon=long,Lat=lat)
 
 
-mynetcdf <- 'data/us_average_P_1985_2015.nc'
+mynetcdf <- 'data/Code_data/us_average_P_1985_2015.nc'
 ncFile <- nc_open(mynetcdf)
 ilongitude <- ncvar_get(ncFile,"lon")
 ilatitude <- ncvar_get(ncFile,"lat")
@@ -38,7 +38,7 @@ Lon <- ilongitude
 Lat <- ilatitude
 image.plot(pr_mean)
 
-mynetcdf_t <- 'data/us_average_T_1985_2015.nc'
+mynetcdf_t <- 'data/Code_data/us_average_T_1985_2015.nc'
 ncFile_t <- nc_open(mynetcdf_t)
 ilongitude <- ncvar_get(ncFile_t,"lon")
 ilatitude <- ncvar_get(ncFile_t,"lat")
@@ -114,7 +114,7 @@ data_pr_temp <- data_pr_temp[, c(1,3,4,2,5)]
 
 #  Read elevation file
 
-file <- 'data/us_elevation.nc'
+file <- 'data/Code_data/us_elevation.nc'
 ncFile_alt <- nc_open(file)
 ilongitude <- ncvar_get(ncFile_t,"lon")
 ilatitude <- ncvar_get(ncFile_t,"lat")
@@ -155,4 +155,4 @@ data_elevation <- data_elevation %>%
 
 data_final <- left_join(data_pr_temp,data_elevation,by=c('ID','Lon','Lat'))
 
-write.csv(data_final,'data/pr_temp_elev_us_1985_2015.csv')
+write.csv(data_final,'data/Code_data/pr_temp_elev_us_1985_2015.csv')
